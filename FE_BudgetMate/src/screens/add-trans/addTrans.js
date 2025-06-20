@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -7,33 +7,62 @@ import {
   Button,
   Alert,
   ScrollView,
+  TouchableOpacity,
+  Platform,
 } from "react-native";
 import DropDownPicker from "react-native-dropdown-picker";
 import Toast from "react-native-toast-message";
+import DateTimePicker from "@react-native-community/datetimepicker";
+import {
+  addNewTransaction,
+  getAllCategories,
+  getUserWallets,
+} from "../../services/apiServices";
 
-export default function AddTransactionScreen() {
+export default function AddTransactionScreen({ navigation }) {
   const [amount, setAmount] = useState("");
   const [note, setNote] = useState("");
+  const [date, setDate] = useState(new Date());
+  const [showPicker, setShowPicker] = useState(false);
 
-  const [categoryOpen, setCategoryOpen] = useState(false);
+  const [open, setOpen] = useState(false);
   const [categoryValue, setCategoryValue] = useState(null);
-  const [categoryItems, setCategoryItems] = useState([
-    { label: "Salary", value: "Salary" },
-    { label: "Shopping", value: "Shopping" },
-    { label: "Utilities", value: "Utilities" },
-    { label: "Food", value: "Food" },
-    { label: "Other", value: "Other" },
-  ]);
+  const [categoryItems, setCategoryItems] = useState([]);
 
-  const [paymentOpen, setPaymentOpen] = useState(false);
-  const [paymentValue, setPaymentValue] = useState(null);
-  const [paymentItems, setPaymentItems] = useState([
-    { label: "Cash", value: "Cash" },
-    { label: "Bank Account", value: "Bank" },
-  ]);
+  const [walletOpen, setWalletOpen] = useState(false);
+  const [walletValue, setWalletValue] = useState(null);
+  const [walletItems, setWalletItems] = useState([]);
 
-  const handleSubmit = () => {
-    if (!amount || !categoryValue || !paymentValue) {
+  useEffect(() => {
+    fetchAllCategories();
+    fetchAllUserWallets();
+  }, []);
+
+  const fetchAllCategories = async () => {
+    try {
+      const res = await getAllCategories();
+      setCategoryItems(res.map((c) => ({ label: c.name, value: c.id })));
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const fetchAllUserWallets = async () => {
+    try {
+      const res = await getUserWallets();
+      setWalletItems(res.map((w) => ({ label: w.name, value: w.id })));
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const handleDateChange = (event, selectedDate) => {
+    if (selectedDate) setDate(selectedDate);
+    setShowPicker(false);
+  };
+
+  const handleSubmit = async () => {
+    if (!amount || !categoryValue || !walletValue) {
       Toast.show({
         type: "error",
         text1: "Missing fields!",
@@ -42,11 +71,31 @@ export default function AddTransactionScreen() {
       return;
     }
 
-    Toast.show({
-      type: "success",
-      text1: "Transaction Added",
-      text2: `Amount: ${amount}, Category: ${categoryValue}, Payment: ${paymentValue}, Note: ${note}`,
-    });
+    try {
+      const payload = {
+        amount: parseFloat(amount),
+        description: note,
+        walletId: walletValue,
+        categoryId: categoryValue,
+        transactionTime: date.toISOString(),
+      };
+      const res = await addNewTransaction(payload);
+
+      if (res) {
+        Toast.show({
+          type: "success",
+          text1: "Transaction Added!",
+        });
+        navigation.navigate("Home");
+      } else {
+        Toast.show({
+          type: "error",
+          text1: "Transaction Failed!",
+        });
+      }
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   return (
@@ -64,10 +113,10 @@ export default function AddTransactionScreen() {
 
       <Text style={styles.label}>Category</Text>
       <DropDownPicker
-        open={categoryOpen}
+        open={open}
         value={categoryValue}
         items={categoryItems}
-        setOpen={setCategoryOpen}
+        setOpen={setOpen}
         setValue={setCategoryValue}
         setItems={setCategoryItems}
         placeholder="Select category"
@@ -77,20 +126,39 @@ export default function AddTransactionScreen() {
         zIndexInverse={1000}
       />
 
-      <Text style={styles.label}>Payment Method</Text>
+      <Text style={styles.label}>Wallet</Text>
       <DropDownPicker
-        open={paymentOpen}
-        value={paymentValue}
-        items={paymentItems}
-        setOpen={setPaymentOpen}
-        setValue={setPaymentValue}
-        setItems={setPaymentItems}
-        placeholder="Select method"
+        open={walletOpen}
+        value={walletValue}
+        items={walletItems}
+        setOpen={setWalletOpen}
+        setValue={setWalletValue}
+        setItems={setWalletItems}
+        placeholder="Pick your wallet"
         style={styles.dropdown}
         dropDownContainerStyle={styles.dropdownContainer}
         zIndex={2000}
         zIndexInverse={2000}
       />
+
+      <Text style={styles.label}>Transaction Time</Text>
+      <TouchableOpacity onPress={() => setShowPicker(true)}>
+        <TextInput
+          style={styles.input}
+          value={date.toLocaleString()}
+          editable={false}
+          placeholder="Pick a date & time"
+        />
+      </TouchableOpacity>
+
+      {showPicker && (
+        <DateTimePicker
+          value={date}
+          mode="datetime"
+          display={Platform.OS === "ios" ? "spinner" : "default"}
+          onChange={handleDateChange}
+        />
+      )}
 
       <Text style={styles.label}>Note</Text>
       <TextInput
