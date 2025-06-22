@@ -1,5 +1,5 @@
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import React, { useState } from "react";
-import { Modal, Platform } from "react-native";
 import {
   View,
   Text,
@@ -10,28 +10,26 @@ import {
   ScrollView,
   Animated,
 } from "react-native";
+import Toast from "react-native-toast-message";
 
 export default function RegisterScreen({ navigation }) {
-  const [showModal, setShowModal] = useState(false);
   const [phoneNumber, setPhoneNumber] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
-  const [fadeAnim] = useState(new Animated.Value(0));
-
-  const handleRegister = () => {
-    if (!phoneNumber) return;
-    setShowModal(true);
-    Animated.timing(fadeAnim, {
-      toValue: 1,
-      duration: 500,
-      useNativeDriver: true,
-    }).start();
-  };
-
-  const handleClose = () => {
-    setShowModal(false);
-    navigation.navigate("Confirm");
+  const handleRegister = async () => {
+    if (!phoneNumber || !password || !confirmPassword) return;
+    if (password !== confirmPassword) {
+      Toast.show({
+        type: "error",
+        text1: "Register failed!",
+        text2: "Your password doesn't match!",
+      });
+    } else {
+      await AsyncStorage.setItem("phone", phoneNumber);
+      await AsyncStorage.setItem("password", password);
+      navigation.navigate("Setup");
+    }
   };
 
   return (
@@ -89,41 +87,6 @@ export default function RegisterScreen({ navigation }) {
           </Text>
         </TouchableOpacity>
       </View>
-
-      <Modal
-        animationType="fade"
-        transparent={true}
-        visible={showModal}
-        onRequestClose={() => setShowModal(false)}
-      >
-        <View style={styles.modalOverlay}>
-          <Animated.View style={[styles.modalContainer, { opacity: fadeAnim }]}>
-            <Text style={styles.modalTitle}>Confirm Registration</Text>
-            <Text style={styles.modalMessage}>
-              Are you sure you want to register with this phone number?
-            </Text>
-            <Text style={styles.modalPhone}>{phoneNumber}</Text>
-
-            <View style={styles.modalButtons}>
-              <TouchableOpacity
-                style={[styles.modalButton, { backgroundColor: "#ccc" }]}
-                onPress={() => setShowModal(false)}
-              >
-                <Text style={styles.modalButtonText}>Cancel</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={[styles.modalButton, { backgroundColor: "#007BFF" }]}
-                onPress={handleClose}
-              >
-                <Text style={[styles.modalButtonText, { color: "#fff" }]}>
-                  Confirm
-                </Text>
-              </TouchableOpacity>
-            </View>
-          </Animated.View>
-        </View>
-      </Modal>
     </ScrollView>
   );
 }

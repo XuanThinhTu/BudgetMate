@@ -10,6 +10,9 @@ import SavingScreen from "../screens/fin-tool/saving/saving";
 import DebtScreen from "../screens/fin-tool/debt/debt";
 import BudgetScreen from "../screens/fin-tool/budget/budget";
 import AddBudgetScreen from "../screens/fin-tool/budget/add-budget/addBudget";
+import Wallet from "../screens/wallet-setup/wallet";
+import AddTransactionScreen from "../screens/add-trans/addTrans";
+import TransDetails from "../screens/trans-details/transDetails";
 
 const Stack = createNativeStackNavigator();
 
@@ -22,6 +25,9 @@ const AppNavigator = () => {
         <Stack.Screen name="Register" component={RegisterScreen} />
         <Stack.Screen name="Confirm" component={ConfirmScreen} />
         <Stack.Screen name="Setup" component={SetupScreen} />
+        <Stack.Screen name="Wallet" component={Wallet} />
+        <Stack.Screen name="AddTrans" component={AddTransactionScreen} />
+        <Stack.Screen name="TransDetails" component={TransDetails} />
         <Stack.Screen name="Home" component={BottomTabNavigator} />
         <Stack.Screen
           name="SavingsScreen"
