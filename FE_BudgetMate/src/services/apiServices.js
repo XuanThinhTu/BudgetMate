@@ -63,6 +63,25 @@ export const addNewTransaction = async (payload) => {
   }
 };
 
+export const updateTransaction = async (id, payload) => {
+  try {
+    console.log(id);
+    const res = await axios.put(`/transaction/${id}`, payload);
+    return res.data;
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+export const deleteTransaction = async (id) => {
+  try {
+    const res = await axios.delete(`/transaction/${id}`);
+    return res.data;
+  } catch (error) {
+    console.log(error);
+  }
+};
+
 export const addNewWallet = async (payload) => {
   try {
     const res = await axios.post("/wallet", payload);

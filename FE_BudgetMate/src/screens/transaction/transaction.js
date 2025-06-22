@@ -1,5 +1,11 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, StyleSheet, ScrollView } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  TouchableOpacity,
+} from "react-native";
 import DropDownPicker from "react-native-dropdown-picker";
 import { MaterialIcons, FontAwesome5, Entypo } from "@expo/vector-icons";
 import {
@@ -23,14 +29,12 @@ const getCategoryIcon = (category) => {
   }
 };
 
-export default function TransactionScreen() {
+export default function TransactionScreen({ navigation }) {
   const [allWallets, setAllWallets] = useState([]);
   const [selectedWalletId, setSelectedWalletId] = useState(null);
   const [openDropdown, setOpenDropdown] = useState(false);
   const [walletOptions, setWalletOptions] = useState([]);
   const [transactions, setTransactions] = useState([]);
-
-  const selectedWallet = allWallets.find((w) => w.id === selectedWalletId);
 
   const totalIncome = transactions
     .filter((t) => t.type === "income")
@@ -62,7 +66,7 @@ export default function TransactionScreen() {
       setWalletOptions(options);
 
       if (res.length > 0) {
-        setSelectedWalletId(res[0].id);
+        setSelectedWalletId(res[res.length - 1].id);
       }
     } catch (error) {
       console.log(error);
@@ -90,8 +94,11 @@ export default function TransactionScreen() {
           title: item.description,
           time,
           date,
+          categoryId: item.categoryId,
           category: item.categoryName || "other",
           type,
+          walletId: item.walletId,
+          walletName: item.walletName,
         };
       });
 
@@ -161,7 +168,13 @@ export default function TransactionScreen() {
             <View key={date} style={styles.group}>
               <Text style={styles.date}>{date}</Text>
               {items.map((item) => (
-                <View key={item.id} style={styles.transactionCard}>
+                <TouchableOpacity
+                  key={item.id}
+                  style={styles.transactionCard}
+                  onPress={() =>
+                    navigation.navigate("TransDetails", { transaction: item })
+                  }
+                >
                   <View style={styles.iconContainer}>
                     {getCategoryIcon(item.category)}
                   </View>
@@ -181,7 +194,7 @@ export default function TransactionScreen() {
                       currency: "VND",
                     })}
                   </Text>
-                </View>
+                </TouchableOpacity>
               ))}
             </View>
           ))

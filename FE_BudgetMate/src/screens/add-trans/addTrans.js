@@ -90,7 +90,7 @@ export default function AddTransactionScreen({ navigation }) {
       } else {
         Toast.show({
           type: "error",
-          text1: "Transaction Failed!",
+          text1: "Added Failed!",
         });
       }
     } catch (error) {
