@@ -26,7 +26,7 @@ export default function TransDetails({ route, navigation }) {
     ...transaction,
     category: transaction.categoryId,
     wallet: transaction.walletId,
-    type: transaction.type, // Add this explicitly
+    type: transaction.type,
   });
 
   const [categories, setCategories] = useState([]);
@@ -102,7 +102,6 @@ export default function TransDetails({ route, navigation }) {
             ? +formData.amount
             : -Math.abs(+formData.amount),
         description: formData.title,
-        walletId: formData.wallet,
         categoryId: formData.category,
         transactionTime: localISOString,
       };
@@ -235,26 +234,11 @@ export default function TransDetails({ route, navigation }) {
         )}
       </View>
 
-      <View style={[styles.section, { zIndex: 2000 }]}>
+      <View style={styles.section}>
         <Text style={styles.label}>Wallet</Text>
-        {isEditing ? (
-          <DropDownPicker
-            open={openWallet}
-            setOpen={setOpenWallet}
-            value={formData.wallet}
-            setValue={(val) => setFormData({ ...formData, wallet: val() })}
-            items={wallets.map((w) => ({ label: w.name, value: w.id }))}
-            style={styles.dropdown}
-            dropDownContainerStyle={styles.dropdownContainer}
-            placeholder="Select Wallet"
-            zIndex={2000}
-            zIndexInverse={1000}
-          />
-        ) : (
-          <Text style={styles.value}>
-            {getLabelById(wallets, formData.wallet)}
-          </Text>
-        )}
+        <Text style={styles.value}>
+          {getLabelById(wallets, formData.wallet)}
+        </Text>
       </View>
 
       <View style={styles.section}>
