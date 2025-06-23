@@ -1,26 +1,40 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
   StyleSheet,
   ScrollView,
   TouchableOpacity,
-  Alert,
+  Image,
 } from "react-native";
-import { FontAwesome5, MaterialIcons, Feather } from "@expo/vector-icons";
+import {
+  FontAwesome5,
+  MaterialIcons,
+  Feather,
+  Entypo,
+} from "@expo/vector-icons";
 import Toast from "react-native-toast-message";
+import { getAuthenticatedUser } from "../../services/apiServices";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function ProfileScreen({ navigation }) {
-  const userInfo = {
-    name: "John Doe",
-    phone: "+1 234 567 890",
-    email: "john.doe@example.com",
-    address: "123 Main St, Cityville",
-    country: "United States",
-    totalBalance: "$12,500.00",
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    fetchAuthenticatedUser();
+  }, []);
+
+  const fetchAuthenticatedUser = async () => {
+    try {
+      const res = await getAuthenticatedUser();
+      setUser(res);
+    } catch (error) {
+      console.log(error);
+    }
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    await AsyncStorage.clear();
     Toast.show({
       type: "success",
       text1: "Logout success!",
@@ -33,36 +47,60 @@ export default function ProfileScreen({ navigation }) {
       <Text style={styles.header}>My Profile</Text>
 
       <View style={styles.infoContainer}>
-        <FontAwesome5
-          name="user-circle"
-          size={80}
-          color="#007BFF"
-          style={styles.avatar}
-        />
+        {user?.avatar ? (
+          <Image source={{ uri: user?.avatar }} style={styles.avatarImg} />
+        ) : (
+          <FontAwesome5
+            name="user-circle"
+            size={80}
+            color="#007BFF"
+            style={styles.avatar}
+          />
+        )}
 
-        <Text style={styles.name}>{userInfo.name}</Text>
-        <Text style={styles.balance}>
-          Total Balance: {userInfo.totalBalance}
-        </Text>
+        <Text style={styles.name}>{user?.fullName}</Text>
+        <Text style={styles.balance}>Credits: {user?.credits}</Text>
 
         <View style={styles.infoRow}>
           <Feather name="phone" size={20} color="#007BFF" />
-          <Text style={styles.infoText}>{userInfo.phone}</Text>
+          <Text style={styles.infoText}>{user?.phone}</Text>
         </View>
 
         <View style={styles.infoRow}>
           <MaterialIcons name="email" size={20} color="#007BFF" />
-          <Text style={styles.infoText}>{userInfo.email}</Text>
+          <Text style={styles.infoText}>{user?.email}</Text>
         </View>
 
         <View style={styles.infoRow}>
           <Feather name="home" size={20} color="#007BFF" />
-          <Text style={styles.infoText}>{userInfo.address}</Text>
+          <Text style={styles.infoText}>{user?.address}</Text>
         </View>
 
         <View style={styles.infoRow}>
-          <FontAwesome5 name="flag" size={20} color="#007BFF" />
-          <Text style={styles.infoText}>{userInfo.country}</Text>
+          <FontAwesome5 name="paw" size={20} color="#007BFF" />
+          <Text style={styles.infoText}>Pet: {user?.petName}</Text>
+        </View>
+
+        <View style={styles.infoRow}>
+          <Entypo name="user" size={20} color="#007BFF" />
+          <Text style={styles.infoText}>Role: {user?.roleName}</Text>
+        </View>
+
+        <View style={styles.infoRow}>
+          <FontAwesome5 name="fire" size={20} color="#FF4500" />
+          <Text style={styles.infoText}>Streak Days: {user?.streakDays}</Text>
+        </View>
+
+        <View style={styles.infoRow}>
+          <FontAwesome5 name="clock" size={20} color="#007BFF" />
+          <Text style={styles.infoText}>
+            Last Login: {new Date(user?.lastLoginDate).toLocaleString("vi-VN")}
+          </Text>
+        </View>
+
+        <View style={styles.infoRow}>
+          <FontAwesome5 name="info-circle" size={20} color="#007BFF" />
+          <Text style={styles.infoText}>Status: {user?.status}</Text>
         </View>
       </View>
 
@@ -78,7 +116,6 @@ const styles = StyleSheet.create({
     paddingVertical: 40,
     alignItems: "center",
     backgroundColor: "#f0f8ff",
-    height: "100vh",
   },
   header: {
     fontSize: 24,
@@ -96,6 +133,12 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 4,
     alignItems: "center",
+  },
+  avatarImg: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    marginBottom: 10,
   },
   avatar: {
     marginBottom: 10,

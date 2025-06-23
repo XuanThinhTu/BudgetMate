@@ -102,6 +102,7 @@ export default function TransDetails({ route, navigation }) {
             ? +formData.amount
             : -Math.abs(+formData.amount),
         description: formData.title,
+        walletId: formData.wallet,
         categoryId: formData.category,
         transactionTime: localISOString,
       };
