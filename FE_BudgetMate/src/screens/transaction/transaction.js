@@ -7,26 +7,83 @@ import {
   TouchableOpacity,
 } from "react-native";
 import DropDownPicker from "react-native-dropdown-picker";
-import { MaterialIcons, FontAwesome5, Entypo } from "@expo/vector-icons";
+import {
+  MaterialIcons,
+  FontAwesome5,
+  Entypo,
+  Feather,
+} from "@expo/vector-icons";
 import {
   getTransactionsByWalletId,
   getUserWallets,
 } from "../../services/apiServices";
 
-// Hàm icon cho từng loại category
-const getCategoryIcon = (category) => {
-  switch (category.toLowerCase()) {
-    case "salary":
-      return <MaterialIcons name="attach-money" size={24} color="#28a745" />;
-    case "groceries":
-      return <FontAwesome5 name="shopping-cart" size={20} color="#007bff" />;
-    case "utilities":
-      return <MaterialIcons name="receipt" size={22} color="#ff9800" />;
-    case "freelance":
-      return <Entypo name="briefcase" size={22} color="#4caf50" />;
-    default:
-      return <MaterialIcons name="money" size={22} color="#333" />;
-  }
+const getCategoryIcon = (categoryName) => {
+  if (!categoryName)
+    return <MaterialIcons name="money" size={22} color="#333" />;
+
+  const lower = categoryName.toLowerCase();
+
+  if (lower.includes("lương") || lower.includes("doanh thu"))
+    return <MaterialIcons name="attach-money" size={24} color="#28a745" />;
+
+  if (lower.includes("ăn uống") || lower.includes("nhà hàng"))
+    return <MaterialIcons name="restaurant" size={22} color="#f39c12" />;
+
+  if (
+    lower.includes("mua sắm") ||
+    lower.includes("thời trang") ||
+    lower.includes("mỹ phẩm")
+  )
+    return <FontAwesome5 name="shopping-bag" size={20} color="#e91e63" />;
+
+  if (lower.includes("giải trí"))
+    return <MaterialIcons name="sports-esports" size={22} color="#9c27b0" />;
+
+  if (lower.includes("giáo dục") || lower.includes("sách"))
+    return <FontAwesome5 name="book" size={20} color="#3f51b5" />;
+
+  if (lower.includes("sức khoẻ"))
+    return <MaterialIcons name="health-and-safety" size={22} color="#4caf50" />;
+
+  if (lower.includes("bảo hiểm"))
+    return <Entypo name="shield" size={22} color="#009688" />;
+
+  if (lower.includes("du lịch"))
+    return <MaterialIcons name="travel-explore" size={22} color="#03a9f4" />;
+
+  if (lower.includes("thể thao"))
+    return <MaterialIcons name="sports-soccer" size={22} color="#ff5722" />;
+
+  if (lower.includes("gia dụng"))
+    return <Feather name="tool" size={22} color="#607d8b" />;
+
+  if (
+    lower.includes("hoá đơn") ||
+    lower.includes("phí") ||
+    lower.includes("thuế")
+  )
+    return <MaterialIcons name="receipt" size={22} color="#795548" />;
+
+  if (lower.includes("phương tiện") || lower.includes("đi lại"))
+    return <FontAwesome5 name="car" size={20} color="#607d8b" />;
+
+  if (lower.includes("ví điện tử"))
+    return <FontAwesome5 name="wallet" size={20} color="#673ab7" />;
+
+  if (lower.includes("từ thiện"))
+    return <FontAwesome5 name="hands-helping" size={20} color="#c2185b" />;
+
+  if (lower.includes("đầu tư") || lower.includes("vay"))
+    return <Entypo name="line-graph" size={22} color="#009688" />;
+
+  if (lower.includes("quà"))
+    return <FontAwesome5 name="gift" size={20} color="#ff9800" />;
+
+  if (lower.includes("thẻ tín dụng"))
+    return <FontAwesome5 name="credit-card" size={20} color="#f44336" />;
+
+  return <MaterialIcons name="money" size={22} color="#333" />;
 };
 
 export default function TransactionScreen({ navigation }) {

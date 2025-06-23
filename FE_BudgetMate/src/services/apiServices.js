@@ -30,7 +30,8 @@ export const registerFunction = async (mail, pass, name, phone, address) => {
 export const getAuthenticatedUser = async () => {
   try {
     const user = await axios.get("/user/c");
-    return user.data;
+    console.log(user.data.data);
+    return user.data.data;
   } catch (error) {
     console.log(error);
   }
@@ -40,6 +41,15 @@ export const getUserWallets = async () => {
   try {
     const wallet = await axios.get("/wallet");
     return wallet.data.data;
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+export const getWalletBalance = async (id) => {
+  try {
+    const res = await axios.get(`/transaction/wallet/${id}/summary`);
+    return res.data.data;
   } catch (error) {
     console.log(error);
   }
