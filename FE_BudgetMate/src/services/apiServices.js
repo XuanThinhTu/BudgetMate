@@ -12,6 +12,15 @@ export const loginFunction = async (mail, pass) => {
   }
 };
 
+export const forgotPassword = async (mail) => {
+  try {
+    const res = await axios.post("/user/forgot-password", { email: mail });
+    return res.data;
+  } catch (error) {
+    console.log(error);
+  }
+};
+
 export const registerFunction = async (mail, pass, name, phone, address) => {
   try {
     const regis = await axios.post("/user/register", {
@@ -103,6 +112,33 @@ export const addNewWallet = async (payload) => {
 export const getAllCategories = async () => {
   try {
     const res = await axios.get("/category");
+    return res.data.data;
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+export const getQuizStatus = async () => {
+  try {
+    const res = await axios.get("/quizzes/status");
+    return res.data.data;
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+export const getUserDailyQuizzes = async () => {
+  try {
+    const quiz = await axios.get("/quizzes/daily");
+    return quiz.data.data;
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+export const submitAnswer = async (payload) => {
+  try {
+    const res = await axios.post("/quizzes/submit", payload);
     return res.data.data;
   } catch (error) {
     console.log(error);

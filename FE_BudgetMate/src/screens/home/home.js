@@ -13,12 +13,12 @@ import {
   Feather,
 } from "@expo/vector-icons";
 import {
+  getQuizStatus,
   getTransactionsByWalletId,
   getUserWallets,
   getWalletBalance,
 } from "../../services/apiServices";
 
-// ==== Hàm lấy icon theo category ====
 const getCategoryIcon = (categoryName) => {
   if (!categoryName)
     return <MaterialIcons name="money" size={22} color="#333" />;
@@ -92,9 +92,11 @@ export default function HomeScreenMain({ navigation }) {
   const [wallets, setWallets] = useState([]);
   const [summary, setSummary] = useState(null);
   const [recent, setRecent] = useState([]);
+  const [quizStatus, setQuizStatus] = useState(null);
 
   useEffect(() => {
     fetchWalletId();
+    fecthQuizStatus();
   }, []);
 
   useEffect(() => {
@@ -144,6 +146,15 @@ export default function HomeScreenMain({ navigation }) {
         category: item.categoryName,
       }));
       setRecent(mapped);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const fecthQuizStatus = async () => {
+    try {
+      const res = await getQuizStatus();
+      setQuizStatus(res);
     } catch (error) {
       console.log(error);
     }
@@ -232,11 +243,43 @@ export default function HomeScreenMain({ navigation }) {
       {/* Thành tựu */}
       <View style={styles.card}>
         <Text style={styles.sectionTitle}>Achievement</Text>
-        <View style={styles.rowBetween}>
-          <Text>Streak: 7 days</Text>
-          <Text>Pet: Cat</Text>
-          <Text>Saving Goal: 60%</Text>
-        </View>
+
+        <Text style={styles.achievementItem}>🔥 Streak: 7 days</Text>
+
+        {quizStatus ? (
+          <View style={styles.achievementGroup}>
+            <Text style={styles.achievementItem}>
+              ✅ Completed Quizzes: {quizStatus.completedQuizzes}/
+              {quizStatus.dailyLimit}
+            </Text>
+            <Text style={styles.achievementItem}>
+              🧠 Can Take Quiz:{" "}
+              <Text
+                style={{
+                  color: quizStatus.canTakeQuiz ? "#16a34a" : "#dc2626",
+                }}
+              >
+                {quizStatus.canTakeQuiz ? "Yes" : "No"}
+              </Text>
+            </Text>
+            <Text style={styles.achievementItem}>
+              💰 Credits Earned: {quizStatus.creditsEarnedToday}
+            </Text>
+
+            {quizStatus.remainingQuizzes > 0 && (
+              <TouchableOpacity
+                style={styles.quizButton}
+                onPress={() => navigation.navigate("Quiz")}
+              >
+                <Text style={styles.quizButtonText}>🎮 Play Quiz</Text>
+              </TouchableOpacity>
+            )}
+          </View>
+        ) : (
+          <Text style={{ fontStyle: "italic", color: "#888" }}>
+            Loading quiz status...
+          </Text>
+        )}
       </View>
 
       {/* Danh sách ví người dùng */}
@@ -387,5 +430,17 @@ const styles = StyleSheet.create({
     marginTop: 8,
     padding: 10,
     alignItems: "center",
+  },
+  quizButton: {
+    marginTop: 10,
+    backgroundColor: "#1d4ed8",
+    paddingVertical: 10,
+    borderRadius: 8,
+    alignItems: "center",
+  },
+  quizButtonText: {
+    color: "#fff",
+    fontWeight: "bold",
+    fontSize: 16,
   },
 });
