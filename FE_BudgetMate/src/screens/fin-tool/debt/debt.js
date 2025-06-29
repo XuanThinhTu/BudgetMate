@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -9,8 +9,25 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { ProgressBar } from "react-native-paper";
+import { getUserWallets } from "../../../services/apiServices";
 
 const DebtScreen = ({ navigation }) => {
+  const [wallets, setWallets] = useState([]);
+
+  useEffect(() => {
+    fetchAllSavingWallets();
+  }, []);
+
+  const fetchAllSavingWallets = async () => {
+    try {
+      const res = await getUserWallets();
+      const savings = res.filter((item) => item.type === "DEBT");
+      setWallets(savings);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   return (
     <View style={styles.container}>
       {/* Header */}
@@ -50,31 +67,53 @@ const DebtScreen = ({ navigation }) => {
       </View>
 
       {/* Debt Card */}
-      <ScrollView contentContainerStyle={styles.scrollContainer}>
-        <View style={styles.card}>
-          <View style={styles.cardHeader}>
-            <Text style={styles.debtTitle}>House</Text>
-            <TouchableOpacity>
-              <Ionicons name="create-outline" size={20} color="#999" />
-            </TouchableOpacity>
-          </View>
-          <Text style={styles.amountText}>
-            Paid <Text style={styles.amountHighlight}>₫500,000,000</Text> /
-            ₫1,200,000,000
+      <ScrollView contentContainerStyle={styles.body}>
+        {wallets.length === 0 ? (
+          <Text style={styles.emptyText}>
+            You have not created any saving wallet yet.
           </Text>
+        ) : (
+          wallets.map((wallet) => {
+            const savedAmount = wallet.balance;
+            const targetAmount = wallet.targetAmount;
+            const percentage = Math.min(
+              100,
+              Math.round((savedAmount / targetAmount) * 100)
+            );
 
-          <View style={styles.progressWrapper}>
-            <ProgressBar
-              progress={0.42}
-              color="#00bcd4"
-              style={styles.progressBar}
-            />
-            <Text style={styles.progressText}>42% remaining</Text>
-          </View>
+            const date = new Date(wallet.deadline);
+            const formattedDate = date.toDateString();
 
-          <Text style={styles.dateText}>Due Date: Dec 12, 2025</Text>
-          <Text style={styles.remainingText}>213 days left until due</Text>
-        </View>
+            return (
+              <View style={styles.card} key={wallet.id}>
+                <View style={styles.cardHeader}>
+                  <Text style={styles.title}>{wallet.name}</Text>
+                  <TouchableOpacity>
+                    <Ionicons name="create-outline" size={20} color="#999" />
+                  </TouchableOpacity>
+                </View>
+
+                <Text style={styles.savedText}>
+                  Saved: ₫{savedAmount.toLocaleString()} / ₫
+                  {targetAmount.toLocaleString()}
+                </Text>
+
+                <View style={styles.progressBarContainer}>
+                  <View style={styles.progressBarBackground}>
+                    <View
+                      style={[styles.progressBar, { width: `${percentage}%` }]}
+                    />
+                  </View>
+                  <Text style={styles.percentage}>{percentage}%</Text>
+                </View>
+
+                <Text style={styles.goalDate}>
+                  🎯 Goal date: {formattedDate}
+                </Text>
+              </View>
+            );
+          })
+        )}
       </ScrollView>
 
       {/* Add Debt Button */}
@@ -201,5 +240,11 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontWeight: "600",
     fontSize: 16,
+  },
+  emptyText: {
+    textAlign: "center",
+    fontSize: 15,
+    color: "#888",
+    marginTop: 40,
   },
 });

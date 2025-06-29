@@ -104,6 +104,7 @@ export const deleteTransaction = async (id) => {
 export const addNewWallet = async (payload) => {
   try {
     const res = await axios.post("/wallet", payload);
+    return res.data.data;
   } catch (error) {
     console.log(error);
   }

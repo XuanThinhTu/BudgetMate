@@ -17,9 +17,8 @@ export default function Wallet({ navigation }) {
 
   const [open, setOpen] = useState(false);
   const [items, setItems] = useState([
-    { label: "Saving", value: "SAVING" },
+    { label: "Saving", value: "SAVINGS" },
     { label: "Debt", value: "DEBT" },
-    { label: "Default", value: "DEFAULT" },
   ]);
 
   const [name, setName] = useState("");
@@ -50,6 +49,7 @@ export default function Wallet({ navigation }) {
         interestRate: isSaving ? parseFloat(interestRate) : null,
         deadline: isSaving ? deadline : null,
       };
+      console.log(payload);
       const res = await addNewWallet(payload);
 
       if (res) {
