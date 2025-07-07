@@ -5,6 +5,7 @@ import HomeScreenMain from "../screens/home/home";
 import TransactionScreen from "../screens/transaction/transaction";
 import AddTransactionScreen from "../screens/add-trans/addTrans";
 import FinancialToolsScreen from "../screens/fin-tool/financialTool";
+import AddTransQuick from "../screens/add-trans-quick/addTransQuick";
 
 const Tab = createBottomTabNavigator();
 
@@ -42,7 +43,7 @@ export default function BottomTabNavigator() {
     >
       <Tab.Screen name="Home" component={HomeScreenMain} />
       <Tab.Screen name="Transaction" component={TransactionScreen} />
-      <Tab.Screen name="Add" component={AddTransactionScreen} />
+      <Tab.Screen name="Add" component={AddTransQuick} />
       <Tab.Screen name="Tools" component={FinancialToolsScreen} />
       <Tab.Screen name="Profile" component={ProfileScreen} />
     </Tab.Navigator>

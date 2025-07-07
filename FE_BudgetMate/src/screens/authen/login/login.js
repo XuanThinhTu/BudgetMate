@@ -8,24 +8,38 @@ import {
   StyleSheet,
 } from "react-native";
 import Toast from "react-native-toast-message";
+import {
+  addStreak,
+  getUserWallets,
+  loginFunction,
+} from "../../../services/apiServices";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function LoginScreen({ navigation }) {
-  const [phone, setPhone] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
     try {
-      if (phone === "0965798796" && password === "123") {
-        navigation.navigate("Home");
+      const result = await loginFunction(email, password);
+      if (result) {
+        await AsyncStorage.setItem("accessToken", result.accessToken);
+        await addStreak();
         Toast.show({
           type: "success",
           text1: "Login success!",
         });
+        const wallet = await getUserWallets();
+        if (wallet && wallet.length > 0) {
+          navigation.navigate("Home");
+        } else {
+          navigation.navigate("Wallet");
+        }
       } else {
         Toast.show({
           type: "error",
           text1: "Login failed!",
-          text2: "Incorrect phone number or password!",
+          text2: "Incorrect email or password!",
         });
       }
     } catch (error) {
@@ -45,10 +59,10 @@ export default function LoginScreen({ navigation }) {
       <Text style={styles.subtitle}>Please login to continue</Text>
 
       <TextInput
-        placeholder="Phone Number"
+        placeholder="Email"
         placeholderTextColor="#888"
-        onChange={(e) => setPhone(e.target.value)}
-        keyboardType="phone-pad"
+        onChange={(e) => setEmail(e.target.value)}
+        keyboardType="email-address"
         style={styles.input}
       />
 
@@ -60,7 +74,7 @@ export default function LoginScreen({ navigation }) {
         style={styles.input}
       />
 
-      <TouchableOpacity>
+      <TouchableOpacity onPress={() => navigation.navigate("Forgot")}>
         <Text style={styles.forgotText}>Forgot your password?</Text>
       </TouchableOpacity>
 

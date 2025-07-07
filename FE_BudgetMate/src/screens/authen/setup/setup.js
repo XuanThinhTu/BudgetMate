@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import Toast from "react-native-toast-message";
 import {
   View,
@@ -10,6 +11,7 @@ import {
   Image,
 } from "react-native";
 import DropDownPicker from "react-native-dropdown-picker";
+import { registerFunction } from "../../../services/apiServices";
 
 export default function SetupScreen({ navigation }) {
   const [fullName, setFullName] = useState("");
@@ -28,13 +30,30 @@ export default function SetupScreen({ navigation }) {
     { label: "Vietnam", value: "Vietnam" },
   ]);
 
-  const handleSubmit = () => {
-    console.log({ fullName, email, dob, country, city, street });
-    Toast.show({
-      type: "success",
-      text1: "Verification successful!",
-    });
-    navigation.navigate("Login");
+  const handleSubmit = async () => {
+    const address = `${street} ${city} ${country}`;
+    const phone = await AsyncStorage.getItem("phone");
+    const pass = await AsyncStorage.getItem("password");
+    if (!fullName || !email || !dob || !address) return;
+    const result = await registerFunction(
+      email,
+      pass,
+      fullName,
+      phone,
+      address
+    );
+    if (result) {
+      Toast.show({
+        type: "success",
+        text1: "Verification successful!",
+      });
+      navigation.navigate("Login");
+    } else {
+      Toast.show({
+        type: "error",
+        text1: "Verification failed!",
+      });
+    }
   };
 
   return (
