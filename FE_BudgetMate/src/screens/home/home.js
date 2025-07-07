@@ -13,12 +13,14 @@ import {
   Feather,
 } from "@expo/vector-icons";
 import {
+  getQuizStatus,
   getTransactionsByWalletId,
   getUserWallets,
   getWalletBalance,
+  getAuthenticatedUser,
+  getUnreadNoti,
 } from "../../services/apiServices";
 
-// ==== Hàm lấy icon theo category ====
 const getCategoryIcon = (categoryName) => {
   if (!categoryName)
     return <MaterialIcons name="money" size={22} color="#333" />;
@@ -89,12 +91,19 @@ const getCategoryIcon = (categoryName) => {
 
 export default function HomeScreenMain({ navigation }) {
   const [walletId, setWalletId] = useState(null);
+  const [user, setUser] = useState(null);
   const [wallets, setWallets] = useState([]);
   const [summary, setSummary] = useState(null);
   const [recent, setRecent] = useState([]);
+  const [quizStatus, setQuizStatus] = useState(null);
+  const [hasNotification, setHasNotification] = useState(true);
+  const [unreadCount, setUnreadCount] = useState(0);
 
   useEffect(() => {
     fetchWalletId();
+    fecthQuizStatus();
+    getCurrentUser();
+    fetchUnreadNoti();
   }, []);
 
   useEffect(() => {
@@ -110,6 +119,24 @@ export default function HomeScreenMain({ navigation }) {
       setWallets(res);
       const selected = res.find((item) => item.type === "DEFAULT");
       setWalletId(selected.id);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const getCurrentUser = async () => {
+    try {
+      const res = await getAuthenticatedUser();
+      setUser(res);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const fetchUnreadNoti = async () => {
+    try {
+      const res = await getUnreadNoti();
+      setUnreadCount(res);
     } catch (error) {
       console.log(error);
     }
@@ -149,8 +176,36 @@ export default function HomeScreenMain({ navigation }) {
     }
   };
 
+  const fecthQuizStatus = async () => {
+    try {
+      const res = await getQuizStatus();
+      setQuizStatus(res);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   return (
     <ScrollView style={styles.container}>
+      <View style={styles.header}>
+        <Text style={styles.headerTitle}>
+          Welcome, {user?.fullName || "User"}
+        </Text>
+        <TouchableOpacity
+          style={styles.notificationIconContainer}
+          onPress={() => navigation.navigate("Notification")}
+        >
+          <MaterialIcons name="notifications-none" size={28} color="#1d4ed8" />
+          {unreadCount > 0 && (
+            <View style={styles.notificationBadge}>
+              <Text style={styles.notificationBadgeText}>
+                {unreadCount > 9 ? "9+" : unreadCount}
+              </Text>
+            </View>
+          )}
+        </TouchableOpacity>
+      </View>
+
       {/* Tổng quan tài chính */}
       <View style={styles.card}>
         <Text style={styles.sectionTitle}>Total Balance</Text>
@@ -232,11 +287,45 @@ export default function HomeScreenMain({ navigation }) {
       {/* Thành tựu */}
       <View style={styles.card}>
         <Text style={styles.sectionTitle}>Achievement</Text>
-        <View style={styles.rowBetween}>
-          <Text>Streak: 7 days</Text>
-          <Text>Pet: Cat</Text>
-          <Text>Saving Goal: 60%</Text>
-        </View>
+
+        <Text style={styles.achievementItem}>
+          🔥 Streak: {user?.streakDays} days
+        </Text>
+
+        {quizStatus ? (
+          <View style={styles.achievementGroup}>
+            <Text style={styles.achievementItem}>
+              ✅ Completed Quizzes: {quizStatus.completedQuizzes}/
+              {quizStatus.dailyLimit}
+            </Text>
+            <Text style={styles.achievementItem}>
+              🧠 Can Take Quiz:{" "}
+              <Text
+                style={{
+                  color: quizStatus.canTakeQuiz ? "#16a34a" : "#dc2626",
+                }}
+              >
+                {quizStatus.canTakeQuiz ? "Yes" : "No"}
+              </Text>
+            </Text>
+            <Text style={styles.achievementItem}>
+              💰 Credits Earned: {quizStatus.creditsEarnedToday}
+            </Text>
+
+            {quizStatus.remainingQuizzes > 0 && (
+              <TouchableOpacity
+                style={styles.quizButton}
+                onPress={() => navigation.navigate("Quiz")}
+              >
+                <Text style={styles.quizButtonText}>🎮 Play Quiz</Text>
+              </TouchableOpacity>
+            )}
+          </View>
+        ) : (
+          <Text style={{ fontStyle: "italic", color: "#888" }}>
+            Loading quiz status...
+          </Text>
+        )}
       </View>
 
       {/* Danh sách ví người dùng */}
@@ -289,6 +378,44 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 16,
     backgroundColor: "#f0f4f8",
+  },
+  header: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 16,
+  },
+
+  headerTitle: {
+    fontSize: 20,
+    fontWeight: "bold",
+    color: "#1e3a8a",
+  },
+  notificationIconContainer: {
+    position: "relative",
+    width: 32,
+    height: 32,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  notificationBadge: {
+    position: "absolute",
+    top: 0,
+    right: 0,
+    minWidth: 16,
+    height: 16,
+    borderRadius: 8,
+    backgroundColor: "#dc2626",
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 4,
+    zIndex: 1,
+  },
+
+  notificationBadgeText: {
+    color: "#fff",
+    fontSize: 10,
+    fontWeight: "bold",
   },
   card: {
     backgroundColor: "#fff",
@@ -387,5 +514,17 @@ const styles = StyleSheet.create({
     marginTop: 8,
     padding: 10,
     alignItems: "center",
+  },
+  quizButton: {
+    marginTop: 10,
+    backgroundColor: "#1d4ed8",
+    paddingVertical: 10,
+    borderRadius: 8,
+    alignItems: "center",
+  },
+  quizButtonText: {
+    color: "#fff",
+    fontWeight: "bold",
+    fontSize: 16,
   },
 });

@@ -12,6 +12,24 @@ export const loginFunction = async (mail, pass) => {
   }
 };
 
+export const addStreak = async () => {
+  try {
+    const res = await axios.post("/streaks/check-in");
+    return res.data.data;
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+export const forgotPassword = async (mail) => {
+  try {
+    const res = await axios.post("/user/forgot-password", { email: mail });
+    return res.data;
+  } catch (error) {
+    console.log(error);
+  }
+};
+
 export const registerFunction = async (mail, pass, name, phone, address) => {
   try {
     const regis = await axios.post("/user/register", {
@@ -30,7 +48,6 @@ export const registerFunction = async (mail, pass, name, phone, address) => {
 export const getAuthenticatedUser = async () => {
   try {
     const user = await axios.get("/user/c");
-    console.log(user.data.data);
     return user.data.data;
   } catch (error) {
     console.log(error);
@@ -95,6 +112,7 @@ export const deleteTransaction = async (id) => {
 export const addNewWallet = async (payload) => {
   try {
     const res = await axios.post("/wallet", payload);
+    return res.data.data;
   } catch (error) {
     console.log(error);
   }
@@ -104,6 +122,80 @@ export const getAllCategories = async () => {
   try {
     const res = await axios.get("/category");
     return res.data.data;
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+export const getQuizStatus = async () => {
+  try {
+    const res = await axios.get("/quizzes/status");
+    return res.data.data;
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+export const getUserDailyQuizzes = async () => {
+  try {
+    const quiz = await axios.get("/quizzes/daily");
+    return quiz.data.data;
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+export const submitAnswer = async (payload) => {
+  try {
+    const res = await axios.post("/quizzes/submit", payload);
+    return res.data.data;
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+export const getAllNoti = async (boolean) => {
+  try {
+    const res = await axios.get(
+      `/notifications?unreadOnly=${boolean}&page=0&size=50`
+    );
+    return res.data.data;
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+export const getUnreadNoti = async () => {
+  try {
+    const res = await axios.get("/notifications/unread-count");
+    return res.data.data;
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+export const readAllNoti = async () => {
+  try {
+    const res = await axios.put("/notifications/read-all");
+    return res.data;
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+export const readNotiId = async (notiId) => {
+  try {
+    const res = await axios.put(`/notifications/${notiId}/read`);
+    return res.data;
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+export const deleteNoti = async (notiId) => {
+  try {
+    const res = await axios.delete(`/notifications/${notiId}`);
+    return res.data;
   } catch (error) {
     console.log(error);
   }
