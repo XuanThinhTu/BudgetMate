@@ -16,6 +16,7 @@
     "@react-navigation/native-stack": "^7.3.13",
     "axios": "^1.9.0",
     "date-fns": "^4.1.0",
+    "dayjs": "^1.11.13",
     "expo": "~53.0.9",
     "expo-status-bar": "~2.2.3",
     "fe_budgetmate": "file:",

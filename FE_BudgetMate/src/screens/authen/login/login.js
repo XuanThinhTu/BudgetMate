@@ -8,7 +8,11 @@ import {
   StyleSheet,
 } from "react-native";
 import Toast from "react-native-toast-message";
-import { getUserWallets, loginFunction } from "../../../services/apiServices";
+import {
+  addStreak,
+  getUserWallets,
+  loginFunction,
+} from "../../../services/apiServices";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function LoginScreen({ navigation }) {
@@ -20,6 +24,7 @@ export default function LoginScreen({ navigation }) {
       const result = await loginFunction(email, password);
       if (result) {
         await AsyncStorage.setItem("accessToken", result.accessToken);
+        await addStreak();
         Toast.show({
           type: "success",
           text1: "Login success!",

@@ -17,6 +17,8 @@ import {
   getTransactionsByWalletId,
   getUserWallets,
   getWalletBalance,
+  getAuthenticatedUser,
+  getUnreadNoti,
 } from "../../services/apiServices";
 
 const getCategoryIcon = (categoryName) => {
@@ -89,14 +91,19 @@ const getCategoryIcon = (categoryName) => {
 
 export default function HomeScreenMain({ navigation }) {
   const [walletId, setWalletId] = useState(null);
+  const [user, setUser] = useState(null);
   const [wallets, setWallets] = useState([]);
   const [summary, setSummary] = useState(null);
   const [recent, setRecent] = useState([]);
   const [quizStatus, setQuizStatus] = useState(null);
+  const [hasNotification, setHasNotification] = useState(true);
+  const [unreadCount, setUnreadCount] = useState(0);
 
   useEffect(() => {
     fetchWalletId();
     fecthQuizStatus();
+    getCurrentUser();
+    fetchUnreadNoti();
   }, []);
 
   useEffect(() => {
@@ -112,6 +119,24 @@ export default function HomeScreenMain({ navigation }) {
       setWallets(res);
       const selected = res.find((item) => item.type === "DEFAULT");
       setWalletId(selected.id);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const getCurrentUser = async () => {
+    try {
+      const res = await getAuthenticatedUser();
+      setUser(res);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const fetchUnreadNoti = async () => {
+    try {
+      const res = await getUnreadNoti();
+      setUnreadCount(res);
     } catch (error) {
       console.log(error);
     }
@@ -162,6 +187,25 @@ export default function HomeScreenMain({ navigation }) {
 
   return (
     <ScrollView style={styles.container}>
+      <View style={styles.header}>
+        <Text style={styles.headerTitle}>
+          Welcome, {user?.fullName || "User"}
+        </Text>
+        <TouchableOpacity
+          style={styles.notificationIconContainer}
+          onPress={() => navigation.navigate("Notification")}
+        >
+          <MaterialIcons name="notifications-none" size={28} color="#1d4ed8" />
+          {unreadCount > 0 && (
+            <View style={styles.notificationBadge}>
+              <Text style={styles.notificationBadgeText}>
+                {unreadCount > 9 ? "9+" : unreadCount}
+              </Text>
+            </View>
+          )}
+        </TouchableOpacity>
+      </View>
+
       {/* Tổng quan tài chính */}
       <View style={styles.card}>
         <Text style={styles.sectionTitle}>Total Balance</Text>
@@ -244,7 +288,9 @@ export default function HomeScreenMain({ navigation }) {
       <View style={styles.card}>
         <Text style={styles.sectionTitle}>Achievement</Text>
 
-        <Text style={styles.achievementItem}>🔥 Streak: 7 days</Text>
+        <Text style={styles.achievementItem}>
+          🔥 Streak: {user?.streakDays} days
+        </Text>
 
         {quizStatus ? (
           <View style={styles.achievementGroup}>
@@ -332,6 +378,44 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 16,
     backgroundColor: "#f0f4f8",
+  },
+  header: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 16,
+  },
+
+  headerTitle: {
+    fontSize: 20,
+    fontWeight: "bold",
+    color: "#1e3a8a",
+  },
+  notificationIconContainer: {
+    position: "relative",
+    width: 32,
+    height: 32,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  notificationBadge: {
+    position: "absolute",
+    top: 0,
+    right: 0,
+    minWidth: 16,
+    height: 16,
+    borderRadius: 8,
+    backgroundColor: "#dc2626",
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 4,
+    zIndex: 1,
+  },
+
+  notificationBadgeText: {
+    color: "#fff",
+    fontSize: 10,
+    fontWeight: "bold",
   },
   card: {
     backgroundColor: "#fff",

@@ -12,6 +12,15 @@ export const loginFunction = async (mail, pass) => {
   }
 };
 
+export const addStreak = async () => {
+  try {
+    const res = await axios.post("/streaks/check-in");
+    return res.data.data;
+  } catch (error) {
+    console.log(error);
+  }
+};
+
 export const forgotPassword = async (mail) => {
   try {
     const res = await axios.post("/user/forgot-password", { email: mail });
@@ -39,7 +48,6 @@ export const registerFunction = async (mail, pass, name, phone, address) => {
 export const getAuthenticatedUser = async () => {
   try {
     const user = await axios.get("/user/c");
-    console.log(user.data.data);
     return user.data.data;
   } catch (error) {
     console.log(error);
@@ -141,6 +149,53 @@ export const submitAnswer = async (payload) => {
   try {
     const res = await axios.post("/quizzes/submit", payload);
     return res.data.data;
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+export const getAllNoti = async (boolean) => {
+  try {
+    const res = await axios.get(
+      `/notifications?unreadOnly=${boolean}&page=0&size=50`
+    );
+    return res.data.data;
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+export const getUnreadNoti = async () => {
+  try {
+    const res = await axios.get("/notifications/unread-count");
+    return res.data.data;
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+export const readAllNoti = async () => {
+  try {
+    const res = await axios.put("/notifications/read-all");
+    return res.data;
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+export const readNotiId = async (notiId) => {
+  try {
+    const res = await axios.put(`/notifications/${notiId}/read`);
+    return res.data;
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+export const deleteNoti = async (notiId) => {
+  try {
+    const res = await axios.delete(`/notifications/${notiId}`);
+    return res.data;
   } catch (error) {
     console.log(error);
   }
