@@ -96,3 +96,21 @@ export const unbanUserFunction = async (id) => {
     console.log(error);
   }
 };
+
+export const getAllMemberships = async () => {
+  try {
+    const res = await axios.get("/memberships");
+    return res.data.data;
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+export const getAllFeatures = async () => {
+  try {
+    const res = await axios.get("/features");
+    return res.data.data;
+  } catch (error) {
+    console.log(error);
+  }
+};
