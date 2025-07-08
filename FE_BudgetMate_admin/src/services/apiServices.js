@@ -114,3 +114,30 @@ export const getAllFeatures = async () => {
     console.log(error);
   }
 };
+
+export const addNewFeature = async (payload) => {
+  try {
+    const res = await axios.post("/features", payload);
+    return res.data.data;
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+export const updateFeature = async (id, payload) => {
+  try {
+    const res = await axios.put(`/features/${id}`, payload);
+    return res.data.data;
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+export const deleteFeature = async (id) => {
+  try {
+    const res = await axios.delete(`/features/${id}`);
+    return res.data;
+  } catch (error) {
+    console.log(error);
+  }
+};

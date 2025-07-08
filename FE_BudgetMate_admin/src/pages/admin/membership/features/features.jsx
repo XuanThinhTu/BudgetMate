@@ -18,13 +18,22 @@ import {
   PlusOutlined,
   ArrowLeftOutlined,
 } from "@ant-design/icons";
-import { getAllFeatures } from "../../../../services/apiServices";
+import {
+  addNewFeature,
+  deleteFeature,
+  getAllFeatures,
+  updateFeature,
+} from "../../../../services/apiServices";
 import { useNavigate } from "react-router-dom";
+import toast from "react-hot-toast";
 
 const { Title } = Typography;
+const { Search } = Input;
 
 function Features() {
   const [features, setFeatures] = useState([]);
+  const [filteredFeatures, setFilteredFeatures] = useState([]);
+  const [searchKeyword, setSearchKeyword] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editingFeature, setEditingFeature] = useState(null);
@@ -39,9 +48,21 @@ function Features() {
     try {
       const res = await getAllFeatures();
       setFeatures(res);
+      setFilteredFeatures(res);
     } catch (error) {
       console.log(error);
     }
+  };
+
+  const handleSearch = (value) => {
+    setSearchKeyword(value);
+    const keyword = value.toLowerCase();
+    const filtered = features.filter(
+      (f) =>
+        f.name.toLowerCase().includes(keyword) ||
+        f.description.toLowerCase().includes(keyword)
+    );
+    setFilteredFeatures(filtered);
   };
 
   const handleAddClick = () => {
@@ -58,32 +79,52 @@ function Features() {
     setIsModalOpen(true);
   };
 
-  const handleSave = () => {
-    form.validateFields().then((values) => {
-      if (isEditing && editingFeature) {
-        const updated = features.map((f) =>
-          f.id === editingFeature.id ? { ...f, ...values } : f
-        );
-        setFeatures(updated);
-        message.success("Feature updated successfully");
-      } else {
-        const newFeature = {
-          ...values,
-          id: Date.now(),
-        };
-        setFeatures((prev) => [...prev, newFeature]);
-        message.success("Feature added successfully");
-      }
+  const handleSave = async () => {
+    try {
+      const values = await form.validateFields();
 
+      if (isEditing && editingFeature) {
+        const updateValue = { ...values };
+        const res = await updateFeature(editingFeature.id, updateValue);
+
+        if (res) {
+          toast.success("Update feature success!");
+          fetchAllFeatures();
+        } else {
+          toast.error("Update feature failed!");
+        }
+      } else {
+        const newFeature = { ...values };
+        const res = await addNewFeature(newFeature);
+
+        if (res) {
+          toast.success("Add feature success!");
+          fetchAllFeatures();
+        } else {
+          toast.error("Add feature failed!");
+        }
+      }
       setIsModalOpen(false);
       setEditingFeature(null);
       form.resetFields();
-    });
+    } catch (error) {
+      console.log("Validation failed:", error);
+    }
   };
 
-  const handleDelete = (id) => {
-    setFeatures(features.filter((f) => f.id !== id));
-    message.success("Feature deleted");
+  const handleDelete = async (id) => {
+    try {
+      const res = await deleteFeature(id);
+
+      if (res) {
+        toast.success("Delete feature success!");
+        fetchAllFeatures();
+      } else {
+        toast.error("Delete feature failed!");
+      }
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   const columns = [
@@ -169,14 +210,24 @@ function Features() {
         </Space>
       </Space>
 
+      {/* 🔍 Search Bar */}
+      <Search
+        placeholder="Search by name or description"
+        allowClear
+        value={searchKeyword}
+        onChange={(e) => handleSearch(e.target.value)}
+        style={{ width: 300, marginBottom: 16 }}
+      />
+
       <Table
-        dataSource={features}
+        dataSource={filteredFeatures}
         columns={columns}
         rowKey="id"
         bordered
         pagination={false}
       />
 
+      {/* 📦 Add/Edit Modal */}
       <Modal
         title={isEditing ? "Edit Feature" : "Add Feature"}
         open={isModalOpen}
