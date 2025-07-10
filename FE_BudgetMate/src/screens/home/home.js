@@ -368,6 +368,16 @@ export default function HomeScreenMain({ navigation }) {
           <Text style={{ color: "#1d4ed8" }}>+ Add Wallet</Text>
         </TouchableOpacity>
       </View>
+
+      <View style={styles.membershipContainer}>
+        <Text style={styles.membershipText}>You want more Features?</Text>
+        <TouchableOpacity
+          style={styles.membershipButton}
+          onPress={() => navigation.navigate("Membership")}
+        >
+          <Text style={styles.membershipButtonText}>Upgrade Now</Text>
+        </TouchableOpacity>
+      </View>
     </ScrollView>
   );
 }
@@ -523,6 +533,31 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   quizButtonText: {
+    color: "#fff",
+    fontWeight: "bold",
+    fontSize: 16,
+  },
+  membershipContainer: {
+    backgroundColor: "#e0f2fe",
+    padding: 16,
+    borderRadius: 12,
+    alignItems: "center",
+    marginBottom: 24,
+    marginTop: 10,
+  },
+  membershipText: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#0369a1",
+    marginBottom: 8,
+  },
+  membershipButton: {
+    backgroundColor: "#0284c7",
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+  },
+  membershipButtonText: {
     color: "#fff",
     fontWeight: "bold",
     fontSize: 16,

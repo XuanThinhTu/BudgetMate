@@ -11,6 +11,7 @@ import Success from "../pages/user/success/success";
 import Quizzes from "../pages/admin/quiz/quizzes";
 import ResetPass from "../pages/user/reset-pass/resetPass";
 import ResetSuccess from "../pages/user/reset-success/resetSuccess";
+import Features from "../pages/admin/membership/features/features";
 
 export default function AppNavigator() {
   return (
@@ -28,6 +29,7 @@ export default function AppNavigator() {
         <Route path="users" element={<UserManagement />} />
         <Route path="users/:id" element={<UserDetails />} />
         <Route path="membership" element={<Membership />} />
+        <Route path="features" element={<Features />} />
         <Route path="quizzes" element={<Quizzes />} />
       </Route>
     </Routes>

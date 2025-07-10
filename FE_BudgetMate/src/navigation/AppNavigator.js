@@ -16,6 +16,7 @@ import TransDetails from "../screens/trans-details/transDetails";
 import QuizScreen from "../screens/quiz/quiz";
 import Forgot from "../screens/authen/forgot/forgot";
 import NotificationScreen from "../screens/noti/notification";
+import MembershipScreen from "../screens/membership/membership";
 
 const Stack = createNativeStackNavigator();
 
@@ -34,6 +35,7 @@ const AppNavigator = () => {
         <Stack.Screen name="TransDetails" component={TransDetails} />
         <Stack.Screen name="Quiz" component={QuizScreen} />
         <Stack.Screen name="Notification" component={NotificationScreen} />
+        <Stack.Screen name="Membership" component={MembershipScreen} />
         <Stack.Screen name="Home" component={BottomTabNavigator} />
         <Stack.Screen
           name="SavingsScreen"
