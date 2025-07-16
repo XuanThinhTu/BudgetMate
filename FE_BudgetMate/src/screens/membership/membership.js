@@ -5,18 +5,33 @@ import {
   ScrollView,
   StyleSheet,
   TouchableOpacity,
+  Linking,
 } from "react-native";
-import { getAllFeatures, getAllMemberships } from "../../services/apiServices";
+import {
+  getAllMemberships,
+  getCurrentSubcription,
+  paymentForNoneBasic,
+  paymentForBasic,
+} from "../../services/apiServices";
+import Toast from "react-native-toast-message";
 
 export default function MembershipScreen() {
   const [packages, setPackages] = useState([]);
-  const [features, setFeatures] = useState([]);
-  const [currentPackageId, setCurrentPackageId] = useState(1);
+  const [currentPackageId, setCurrentPackageId] = useState(0);
 
   useEffect(() => {
     fetchMemberships();
-    fetchFeaures();
+    fecthCurrentSubcription();
   }, []);
+
+  const fecthCurrentSubcription = async () => {
+    try {
+      const res = await getCurrentSubcription();
+      setCurrentPackageId(res.membershipPlan.id);
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   const fetchMemberships = async () => {
     try {
@@ -27,17 +42,31 @@ export default function MembershipScreen() {
     }
   };
 
-  const fetchFeaures = async () => {
+  const handleSubscribe = async (membership) => {
     try {
-      const res = await getAllFeatures();
-      setFeatures(res);
+      if (membership.price === 0) {
+        const res = await paymentForBasic(membership.id);
+
+        if (res) {
+          Toast.show({
+            type: "success",
+            text1: "Subscribe success!",
+          });
+          fetchMemberships();
+          fecthCurrentSubcription();
+        } else {
+          Toast.show({
+            type: "error",
+            text1: "Subscribe failed!",
+          });
+        }
+      } else {
+        const res = await paymentForNoneBasic(membership.id);
+        Linking.openURL(res.checkoutUrl);
+      }
     } catch (error) {
       console.log(error);
     }
-  };
-
-  const handleSubscribe = (membershipId) => {
-    console.log("Subscribe to membership:", membershipId);
   };
 
   return (
@@ -73,7 +102,7 @@ export default function MembershipScreen() {
               styles.button,
               pkg.id === currentPackageId && styles.disabledButton,
             ]}
-            onPress={() => handleSubscribe(pkg.id)}
+            onPress={() => handleSubscribe(pkg)}
             disabled={pkg.id === currentPackageId}
           >
             <Text style={styles.buttonText}>

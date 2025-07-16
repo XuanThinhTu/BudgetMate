@@ -156,6 +156,9 @@ export default function TransactionScreen({ navigation }) {
           type,
           walletId: item.walletId,
           walletName: item.walletName,
+          originalAmount: item.originalAmount,
+          originalDescription: item.originalDescription,
+          originalTransactionTime: item.originalTransactionTime,
         };
       });
 

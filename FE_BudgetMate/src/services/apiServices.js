@@ -210,6 +210,39 @@ export const getAllMemberships = async () => {
   }
 };
 
+export const getCurrentSubcription = async () => {
+  try {
+    const res = await axios.get("/subscriptions/current");
+    return res.data.data;
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+export const paymentForBasic = async (id) => {
+  try {
+    const res = await axios.post(`/subscriptions/subscribe/${id}`, {
+      paymentMethod: "CREDIT_CARD",
+    });
+    return res.data.data;
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+export const paymentForNoneBasic = async (id) => {
+  try {
+    const res = await axios.post(`/subscriptions/payment/${id}`, {
+      paymentMethod: "CREDIT_CARD",
+      returnUrl: "http://localhost:5173/payment-return",
+      cancelUrl: "http://localhost:5173/payment-return",
+    });
+    return res.data.data;
+  } catch (error) {
+    console.log(error);
+  }
+};
+
 export const getAllFeatures = async () => {
   try {
     const res = await axios.get("/features");
