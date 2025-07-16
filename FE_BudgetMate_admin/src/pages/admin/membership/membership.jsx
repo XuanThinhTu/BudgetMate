@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Card,
   Col,
@@ -9,67 +9,84 @@ import {
   Input,
   Select,
   InputNumber,
-  Table,
   Tag,
   Typography,
+  Divider,
 } from "antd";
+import { EditOutlined, PlusOutlined, DeleteOutlined } from "@ant-design/icons";
+import {
+  getAllFeatures,
+  getAllMemberships,
+} from "../../../services/apiServices";
+import { useNavigate } from "react-router";
 
 const { Option } = Select;
-const { Title } = Typography;
-
-const initialPackages = [
-  {
-    key: "basic",
-    name: "Basic",
-    duration: 30,
-    price: 5,
-    features: ["Basic Budget Tracking"],
-    status: "Active",
-    revenue: 500,
-    subscribers: 100,
-  },
-  {
-    key: "plus",
-    name: "Plus",
-    duration: 90,
-    price: 12,
-    features: ["Basic Budget Tracking", "AI Recommendation"],
-    status: "Active",
-    revenue: 1200,
-    subscribers: 150,
-  },
-  {
-    key: "premium",
-    name: "Premium",
-    duration: 180,
-    price: 20,
-    features: ["All Plus Features", "Priority Support", "Advanced Analytics"],
-    status: "Inactive",
-    revenue: 2000,
-    subscribers: 80,
-  },
-];
+const { Title, Text } = Typography;
 
 const Membership = () => {
-  const [packages, setPackages] = useState(initialPackages);
+  const navigate = useNavigate();
+  const [packages, setPackages] = useState([]);
+  const [features, setFeatures] = useState([]);
   const [selectedPackage, setSelectedPackage] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
   const [form] = Form.useForm();
 
+  useEffect(() => {
+    fetchAllMemberships();
+    fetchAllFeatures();
+  }, []);
+
+  const fetchAllMemberships = async () => {
+    try {
+      const res = await getAllMemberships();
+      const formatted = res.map((pkg) => ({
+        ...pkg,
+        key: pkg.id,
+        features: pkg.features,
+      }));
+      setPackages(formatted);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const fetchAllFeatures = async () => {
+    try {
+      const res = await getAllFeatures();
+      setFeatures(res);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   const showEditModal = (pkg) => {
     setSelectedPackage(pkg);
-    form.setFieldsValue(pkg);
+    form.setFieldsValue({
+      ...pkg,
+      features: pkg?.features?.map((f) => f.id),
+    });
     setModalVisible(true);
   };
 
   const handleSave = () => {
     form.validateFields().then((values) => {
-      const updatedPackages = selectedPackage
+      const selectedFeatures = features.filter((f) =>
+        values.features.includes(f.id)
+      );
+
+      const updated = {
+        ...values,
+        key: selectedPackage?.key || values.name.toLowerCase(),
+        features: selectedFeatures, // lưu object đầy đủ để hiển thị đẹp
+      };
+
+      const newList = selectedPackage
         ? packages.map((pkg) =>
-            pkg.key === selectedPackage.key ? { ...pkg, ...values } : pkg
+            pkg.key === selectedPackage.key ? updated : pkg
           )
-        : [...packages, { ...values, key: values.name.toLowerCase() }];
-      setPackages(updatedPackages);
+        : [...packages, updated];
+
+      setPackages(newList);
       setModalVisible(false);
       setSelectedPackage(null);
       form.resetFields();
@@ -78,83 +95,121 @@ const Membership = () => {
 
   const handleDelete = () => {
     if (selectedPackage) {
-      setPackages(packages.filter((pkg) => pkg.key !== selectedPackage.key));
+      setPackages((prev) =>
+        prev.filter((pkg) => pkg.key !== selectedPackage.key)
+      );
       setModalVisible(false);
       setSelectedPackage(null);
       form.resetFields();
     }
   };
 
-  const revenueColumns = [
-    {
-      title: "Package Name",
-      dataIndex: "name",
-      key: "name",
-    },
-    {
-      title: "Revenue ($)",
-      dataIndex: "revenue",
-      key: "revenue",
-    },
-    {
-      title: "Subscribers",
-      dataIndex: "subscribers",
-      key: "subscribers",
-    },
-  ];
+  const renderFeatureList = (features) => (
+    <ul style={{ paddingLeft: 20, marginBottom: 0 }}>
+      {features?.map((f, idx) => (
+        <li key={idx} style={{ marginBottom: 8 }}>
+          <Text>
+            <strong>{f.name}</strong>
+            {f.description ? `  ${f.description}` : ""}
+          </Text>
+        </li>
+      ))}
+    </ul>
+  );
 
   return (
     <div style={{ padding: 24 }}>
-      <Title level={3}>Membership Packages</Title>
-      <Row gutter={16}>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          marginBottom: 16,
+        }}
+      >
+        <Title level={3} style={{ margin: 0 }}>
+          Membership Packages
+        </Title>
+        <Button type="primary" onClick={() => navigate("/admin/features")}>
+          Features Management
+        </Button>
+      </div>
+      <Row gutter={[24, 24]} align="stretch">
         {packages.map((pkg) => (
           <Col key={pkg.key} span={8}>
             <Card
-              title={pkg.name}
-              extra={
-                <Tag color={pkg.status === "Active" ? "green" : "red"}>
-                  {pkg.status}
-                </Tag>
+              style={{
+                height: "100%",
+                display: "flex",
+                flexDirection: "column",
+              }}
+              bodyStyle={{ flex: 1, display: "flex", flexDirection: "column" }}
+              title={
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                  }}
+                >
+                  <Text strong>{pkg.name}</Text>
+                  <Tag color={pkg.status === "ACTIVE" ? "green" : "red"}>
+                    {pkg.status}
+                  </Tag>
+                </div>
               }
               actions={[
-                <Button type="link" onClick={() => showEditModal(pkg)}>
+                <Button
+                  type="link"
+                  icon={<EditOutlined />}
+                  onClick={() => showEditModal(pkg)}
+                  block
+                >
                   Edit
                 </Button>,
               ]}
             >
-              <p>
-                <strong>Duration:</strong> {pkg.duration} days
-              </p>
-              <p>
-                <strong>Price:</strong> ${pkg.price}
-              </p>
-              <p>
-                <strong>Features:</strong>
-              </p>
-              <ul>
-                {pkg.features.map((f, idx) => (
-                  <li key={idx}>{f}</li>
-                ))}
-              </ul>
+              <div
+                style={{ flex: 1, display: "flex", flexDirection: "column" }}
+              >
+                <Text type="secondary">Description:</Text>
+                <Text style={{ marginBottom: 8 }}>{pkg.description}</Text>
+
+                <Text type="secondary">Duration:</Text>
+                <Text style={{ marginBottom: 8 }}>{pkg.duration} days</Text>
+
+                <Text type="secondary">Price:</Text>
+                <Text style={{ marginBottom: 8 }}>${pkg.price}</Text>
+
+                <Divider style={{ margin: "12px 0" }} />
+                <Text strong>Features</Text>
+                {renderFeatureList(pkg.features)}
+              </div>
             </Card>
           </Col>
         ))}
+
+        {/* Add new card */}
         <Col span={8}>
           <Card
+            hoverable
             style={{
               height: "100%",
               display: "flex",
               justifyContent: "center",
               alignItems: "center",
+              border: "1px dashed #d9d9d9",
             }}
+            onClick={() => showEditModal(null)}
           >
-            <Button type="dashed" onClick={() => showEditModal(null)} block>
-              + Add Package
+            <Button type="dashed" icon={<PlusOutlined />} size="large">
+              Add Package
             </Button>
           </Card>
         </Col>
       </Row>
 
+      {/* Modal */}
       <Modal
         title={selectedPackage ? "Edit Package" : "Add Package"}
         open={modalVisible}
@@ -162,11 +217,14 @@ const Membership = () => {
           setModalVisible(false);
           form.resetFields();
         }}
-        onOk={handleSave}
-        okText="Save"
         footer={[
           selectedPackage && (
-            <Button danger key="delete" onClick={handleDelete}>
+            <Button
+              danger
+              key="delete"
+              onClick={handleDelete}
+              icon={<DeleteOutlined />}
+            >
               Delete
             </Button>
           ),
@@ -182,56 +240,68 @@ const Membership = () => {
           <Form.Item
             label="Package Name"
             name="name"
-            rules={[{ required: true, message: "Please input package name" }]}
+            rules={[{ required: true, message: "Please enter package name" }]}
           >
             <Input />
           </Form.Item>
+
+          <Form.Item
+            label="Description"
+            name="description"
+            rules={[{ required: true, message: "Please enter description" }]}
+          >
+            <Input.TextArea rows={2} />
+          </Form.Item>
+
           <Form.Item
             label="Duration (days)"
             name="duration"
-            rules={[{ required: true }]}
+            rules={[{ required: true, message: "Please enter duration" }]}
           >
             <InputNumber min={1} style={{ width: "100%" }} />
           </Form.Item>
+
           <Form.Item
             label="Price ($)"
             name="price"
-            rules={[{ required: true }]}
+            rules={[{ required: true, message: "Please enter price" }]}
           >
             <InputNumber min={0} style={{ width: "100%" }} />
           </Form.Item>
+
           <Form.Item
-            label="Features (comma-separated)"
+            label="Features"
             name="features"
-            rules={[{ required: true }]}
+            rules={[
+              { required: true, message: "Please select at least one feature" },
+            ]}
           >
-            <Input
-              placeholder="Example: AI, Budget Tracking"
-              onChange={(e) =>
-                form.setFieldsValue({
-                  features: e.target.value.split(",").map((f) => f.trim()),
-                })
-              }
-            />
+            <Select
+              mode="multiple"
+              allowClear
+              placeholder="Select features"
+              optionFilterProp="label"
+            >
+              {features.map((f) => (
+                <Option key={f.id} value={f.id} label={f.name}>
+                  {f.name}
+                </Option>
+              ))}
+            </Select>
           </Form.Item>
-          <Form.Item label="Status" name="status">
-            <Select>
-              <Option value="Active">Active</Option>
-              <Option value="Inactive">Inactive</Option>
+
+          <Form.Item
+            label="Status"
+            name="status"
+            rules={[{ required: true, message: "Please select status" }]}
+          >
+            <Select placeholder="Select status">
+              <Option value="ACTIVE">Active</Option>
+              <Option value="INACTIVE">Inactive</Option>
             </Select>
           </Form.Item>
         </Form>
       </Modal>
-
-      <Title level={4} style={{ marginTop: 40 }}>
-        Package Revenue Summary
-      </Title>
-      <Table
-        columns={revenueColumns}
-        dataSource={packages}
-        rowKey="key"
-        pagination={false}
-      />
     </div>
   );
 };

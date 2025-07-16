@@ -14,8 +14,6 @@ function UserManagement() {
     fetchAllUsers();
   }, []);
 
-  console.log(users);
-
   const fetchAllUsers = async () => {
     try {
       const res = await getAllUsers();
