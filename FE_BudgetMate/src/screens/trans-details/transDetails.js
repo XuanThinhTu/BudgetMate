@@ -20,6 +20,7 @@ import {
 
 export default function TransDetails({ route, navigation }) {
   const { transaction } = route.params;
+  console.log(transaction);
 
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
@@ -33,7 +34,6 @@ export default function TransDetails({ route, navigation }) {
   const [wallets, setWallets] = useState([]);
 
   const [openCategory, setOpenCategory] = useState(false);
-  const [openWallet, setOpenWallet] = useState(false);
 
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [day, month, year] = transaction.date.split("/");
@@ -292,11 +292,67 @@ export default function TransDetails({ route, navigation }) {
 
       <TouchableOpacity
         style={styles.deleteBtn}
-        onPress={() => handleDelete(formData.id)}
+        onPress={() => handleDelete(transaction.id)}
       >
         <MaterialIcons name="delete" size={22} color="#fff" />
         <Text style={styles.deleteText}>Delete Transaction</Text>
       </TouchableOpacity>
+
+      <View style={styles.editHistoryContainer}>
+        <Text style={styles.historyTitle}>Last Edit History</Text>
+
+        {transaction.originalAmount === null &&
+        transaction.originalDescription === null &&
+        transaction.originalTransactionTime === null ? (
+          <Text style={styles.italicNote}>
+            This transaction has not been edited yet.
+          </Text>
+        ) : (
+          <>
+            {transaction.originalAmount !== null && (
+              <View style={styles.historyRow}>
+                <Text style={styles.historyLabel}>Original Amount:</Text>
+                <Text style={styles.historyValue}>
+                  {Math.abs(transaction.originalAmount).toLocaleString(
+                    "vi-VN",
+                    {
+                      style: "currency",
+                      currency: "VND",
+                    }
+                  )}
+                </Text>
+              </View>
+            )}
+
+            {transaction.originalDescription && (
+              <View style={styles.historyRow}>
+                <Text style={styles.historyLabel}>Original Description:</Text>
+                <Text style={styles.historyValue}>
+                  {transaction.originalDescription}
+                </Text>
+              </View>
+            )}
+
+            {transaction.originalTransactionTime && (
+              <View style={styles.historyRow}>
+                <Text style={styles.historyLabel}>Original Time:</Text>
+                <Text style={styles.historyValue}>
+                  {new Date(
+                    transaction.originalTransactionTime
+                  ).toLocaleDateString("vi-VN")}{" "}
+                  at{" "}
+                  {new Date(
+                    transaction.originalTransactionTime
+                  ).toLocaleTimeString("vi-VN", {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}
+                </Text>
+              </View>
+            )}
+          </>
+        )}
+      </View>
     </View>
   );
 }
@@ -409,5 +465,40 @@ const styles = StyleSheet.create({
   },
   activeTypeText: {
     color: "#fff",
+  },
+  editHistoryContainer: {
+    backgroundColor: "#fff",
+    padding: 16,
+    borderRadius: 10,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+    marginTop: 20,
+  },
+  historyTitle: {
+    fontSize: 16,
+    fontWeight: "bold",
+    marginBottom: 12,
+    color: "#1f2937",
+  },
+  italicNote: {
+    fontStyle: "italic",
+    color: "#6b7280",
+    fontSize: 14,
+  },
+  historyRow: {
+    flexDirection: "row",
+    marginBottom: 8,
+  },
+  historyLabel: {
+    fontWeight: "600",
+    color: "#374151",
+    width: 140,
+  },
+  historyValue: {
+    flex: 1,
+    color: "#111827",
   },
 });
