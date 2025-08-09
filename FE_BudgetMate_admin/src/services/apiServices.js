@@ -197,3 +197,32 @@ export const deletePurchasableFeature = async (id) => {
     console.log(error);
   }
 };
+
+export const getRevenueByRange = async (range, start, end) => {
+  try {
+    if (start && end) {
+      console.log("start", start);
+      console.log("end", end);
+      const res = await axios.get(
+        `/admin/analytics/revenue?period=${range}&startDate=${start}&endDate=${end}`
+      );
+      return res.data.data;
+    } else {
+      const res = await axios.get(`/admin/analytics/revenue?period=${range}`);
+      return res.data.data;
+    }
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+export const membershipBreakdown = async (start, end) => {
+  try {
+    const res = await axios.get(
+      `/admin/analytics/revenue/membership?startDate=${start}&endDate=${end}`
+    );
+    return res.data.data;
+  } catch (error) {
+    console.log(error);
+  }
+};
