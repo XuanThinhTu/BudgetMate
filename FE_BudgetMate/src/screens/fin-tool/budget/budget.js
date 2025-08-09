@@ -114,14 +114,6 @@ export default function BudgetScreen({ navigation }) {
           })
         )}
       </ScrollView>
-
-      <TouchableOpacity
-        style={styles.addButton}
-        onPress={() => navigation.navigate("AddBudgetScreen")}
-      >
-        <Ionicons name="add" size={18} color="white" />
-        <Text style={styles.addButtonText}>Add Budget</Text>
-      </TouchableOpacity>
     </View>
   );
 }

@@ -18,6 +18,7 @@ import {
   getAllCategories,
   getUserWallets,
 } from "../../services/apiServices";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function AddTransactionScreen({ navigation }) {
   const [amount, setAmount] = useState("");
@@ -29,14 +30,39 @@ export default function AddTransactionScreen({ navigation }) {
   const [categoryValue, setCategoryValue] = useState(null);
   const [categoryItems, setCategoryItems] = useState([]);
 
-  const [walletOpen, setWalletOpen] = useState(false);
   const [walletValue, setWalletValue] = useState(null);
-  const [walletItems, setWalletItems] = useState([]);
 
   useEffect(() => {
     fetchAllCategories();
-    fetchAllUserWallets();
+    fetchUserDefaultWallets();
   }, []);
+
+  useEffect(() => {
+    if (categoryItems.length > 0) {
+      loadStoredData();
+    }
+  }, [categoryItems]);
+
+  const loadStoredData = async () => {
+    try {
+      const storedAmount = await AsyncStorage.getItem("amount");
+      const storedCategory = await AsyncStorage.getItem("category");
+      const storedDescription = await AsyncStorage.getItem("description");
+
+      if (storedAmount !== null) setAmount(parseInt(storedAmount));
+      if (storedDescription !== null) setNote(storedDescription);
+      if (storedCategory !== null && categoryItems.length > 0) {
+        const found = categoryItems.find(
+          (item) => item.label.toLowerCase() === storedCategory.toLowerCase()
+        );
+        if (found) {
+          setCategoryValue(found.value);
+        }
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   const fetchAllCategories = async () => {
     try {
@@ -47,10 +73,11 @@ export default function AddTransactionScreen({ navigation }) {
     }
   };
 
-  const fetchAllUserWallets = async () => {
+  const fetchUserDefaultWallets = async () => {
     try {
       const res = await getUserWallets();
-      setWalletItems(res.map((w) => ({ label: w.name, value: w.id })));
+      const defaultW = res.filter((w) => w.type === "DEFAULT");
+      setWalletValue(defaultW[0]?.id);
     } catch (error) {
       console.log(error);
     }
@@ -86,6 +113,9 @@ export default function AddTransactionScreen({ navigation }) {
           type: "success",
           text1: "Transaction Added!",
         });
+        AsyncStorage.removeItem("amount");
+        AsyncStorage.removeItem("category");
+        AsyncStorage.removeItem("description");
         navigation.navigate("Home");
       } else {
         Toast.show({
@@ -124,21 +154,6 @@ export default function AddTransactionScreen({ navigation }) {
         dropDownContainerStyle={styles.dropdownContainer}
         zIndex={3000}
         zIndexInverse={1000}
-      />
-
-      <Text style={styles.label}>Wallet</Text>
-      <DropDownPicker
-        open={walletOpen}
-        value={walletValue}
-        items={walletItems}
-        setOpen={setWalletOpen}
-        setValue={setWalletValue}
-        setItems={setWalletItems}
-        placeholder="Pick your wallet"
-        style={styles.dropdown}
-        dropDownContainerStyle={styles.dropdownContainer}
-        zIndex={2000}
-        zIndexInverse={2000}
       />
 
       <Text style={styles.label}>Transaction Time</Text>

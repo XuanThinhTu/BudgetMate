@@ -20,7 +20,6 @@ import {
 
 export default function TransDetails({ route, navigation }) {
   const { transaction } = route.params;
-  console.log(transaction);
 
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
@@ -230,7 +229,7 @@ export default function TransDetails({ route, navigation }) {
           />
         ) : (
           <Text style={styles.value}>
-            {getLabelById(categories, formData.category)}
+            {getLabelById(categories, formData.categoryId)}
           </Text>
         )}
       </View>
@@ -301,9 +300,9 @@ export default function TransDetails({ route, navigation }) {
       <View style={styles.editHistoryContainer}>
         <Text style={styles.historyTitle}>Last Edit History</Text>
 
-        {transaction.originalAmount === null &&
-        transaction.originalDescription === null &&
-        transaction.originalTransactionTime === null ? (
+        {transaction.originalAmount == null &&
+        transaction.originalDescription == null &&
+        transaction.originalTransactionTime == null ? (
           <Text style={styles.italicNote}>
             This transaction has not been edited yet.
           </Text>

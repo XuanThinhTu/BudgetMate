@@ -21,6 +21,17 @@ export const resetPassword = async (payload) => {
   }
 };
 
+export const getPaymentStatus = async (orderCode, status) => {
+  try {
+    const res = await axios.post(
+      `/payment/confirm?orderCode=${orderCode}&status=${status}`
+    );
+    return res.data;
+  } catch (error) {
+    console.log(error);
+  }
+};
+
 //================== ADMIN ======================
 
 export const loginFunction = async (payload) => {
@@ -106,6 +117,33 @@ export const getAllMemberships = async () => {
   }
 };
 
+export const addNewMembership = async (payload) => {
+  try {
+    const res = await axios.post("/memberships", payload);
+    return res.data.data;
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+export const updateMembership = async (id, payload) => {
+  try {
+    const res = await axios.put(`/memberships/${id}`, payload);
+    return res.data.data;
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+export const deleteMembership = async (id) => {
+  try {
+    const res = await axios.delete(`/memberships/${id}`);
+    return res.data;
+  } catch (error) {
+    console.log(error);
+  }
+};
+
 export const getAllFeatures = async () => {
   try {
     const res = await axios.get("/features");
@@ -124,18 +162,36 @@ export const addNewFeature = async (payload) => {
   }
 };
 
-export const updateFeature = async (id, payload) => {
+export const getAllPurchasableFeatures = async () => {
   try {
-    const res = await axios.put(`/features/${id}`, payload);
+    const res = await axios.get("/purchasable-features");
+    return res.data.data.content;
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+export const addNewPurchasableFeature = async (payload) => {
+  try {
+    const res = await axios.post("/purchasable-features", payload);
     return res.data.data;
   } catch (error) {
     console.log(error);
   }
 };
 
-export const deleteFeature = async (id) => {
+export const updatePurchasableFeature = async (id, payload) => {
   try {
-    const res = await axios.delete(`/features/${id}`);
+    const res = await axios.put(`/purchasable-features/${id}`, payload);
+    return res.data.data;
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+export const deletePurchasableFeature = async (id) => {
+  try {
+    const res = await axios.delete(`/purchasable-features/${id}`);
     return res.data;
   } catch (error) {
     console.log(error);

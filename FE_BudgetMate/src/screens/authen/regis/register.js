@@ -77,7 +77,7 @@ export default function RegisterScreen({ navigation }) {
       </TouchableOpacity>
 
       <View style={styles.loginContainer}>
-        <Text style={styles.loginText}>Already have an account?</Text>
+        <Text style={styles.loginText}>Already have an account? </Text>
         <TouchableOpacity>
           <Text
             style={styles.loginLink}

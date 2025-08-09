@@ -220,7 +220,11 @@ function Quizzes() {
         rowKey="id"
         columns={columns}
         dataSource={quizzes}
-        pagination={{ pageSize: 10 }}
+        pagination={{
+          pageSize: 10,
+          showSizeChanger: true,
+          showQuickJumper: true,
+        }}
         bordered
       />
 

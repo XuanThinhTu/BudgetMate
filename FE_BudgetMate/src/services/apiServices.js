@@ -90,6 +90,15 @@ export const addNewTransaction = async (payload) => {
   }
 };
 
+export const addNewTransactionByAI = async (payload) => {
+  try {
+    const res = await axios.post("/transaction/classify", payload);
+    return res.data.data;
+  } catch (error) {
+    console.log(error);
+  }
+};
+
 export const updateTransaction = async (id, payload) => {
   try {
     console.log(id);
@@ -112,6 +121,15 @@ export const deleteTransaction = async (id) => {
 export const addNewWallet = async (payload) => {
   try {
     const res = await axios.post("/wallet", payload);
+    return res.data.data;
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+export const deleteWallet = async (id) => {
+  try {
+    const res = await axios.delete(`/wallet/${id}`);
     return res.data.data;
   } catch (error) {
     console.log(error);
@@ -246,6 +264,35 @@ export const paymentForNoneBasic = async (id) => {
 export const getAllFeatures = async () => {
   try {
     const res = await axios.get("/features");
+    return res.data.data;
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+export const getAllPurchasableFeatures = async () => {
+  try {
+    const res = await axios.get("/purchasable-features");
+    return res.data.data.content;
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+export const purchaseFeature = async (id) => {
+  try {
+    const res = await axios.post("/credits/purchase-feature", {
+      purchasableFeatureId: id,
+    });
+    return res.data.data;
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+export const getPurchasedFeatures = async () => {
+  try {
+    const res = await axios.get("/user/purchased-features");
     return res.data.data;
   } catch (error) {
     console.log(error);

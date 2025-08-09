@@ -7,6 +7,7 @@ import {
   UserOutlined,
   LogoutOutlined,
   IdcardOutlined,
+  AppstoreOutlined,
 } from "@ant-design/icons";
 import logo from "../../assets/logo/logo.png";
 import { Outlet, useNavigate } from "react-router";
@@ -19,6 +20,7 @@ const menuItems = [
   { key: "revenue", icon: <WalletOutlined />, label: "Revenue" },
   { key: "users", icon: <UserOutlined />, label: "Users" },
   { key: "membership", icon: <IdcardOutlined />, label: "Membership" },
+  { key: "features", icon: <AppstoreOutlined />, label: "Features" },
   { key: "quizzes", icon: <ReadOutlined />, label: "Quizzes" },
 ];
 

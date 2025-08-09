@@ -14,10 +14,12 @@ import {
   paymentForBasic,
 } from "../../services/apiServices";
 import Toast from "react-native-toast-message";
+import { useNavigation } from "@react-navigation/native";
 
 export default function MembershipScreen() {
   const [packages, setPackages] = useState([]);
   const [currentPackageId, setCurrentPackageId] = useState(0);
+  const navigation = useNavigation();
 
   useEffect(() => {
     fetchMemberships();
@@ -111,6 +113,15 @@ export default function MembershipScreen() {
           </TouchableOpacity>
         </View>
       ))}
+
+      <View style={styles.creditContainer}>
+        <TouchableOpacity
+          style={styles.creditButton}
+          onPress={() => navigation.navigate("Credit")}
+        >
+          <Text style={styles.creditButtonText}>Use your credit</Text>
+        </TouchableOpacity>
+      </View>
     </ScrollView>
   );
 }
@@ -190,5 +201,20 @@ const styles = StyleSheet.create({
   },
   disabledButton: {
     backgroundColor: "#94a3b8",
+  },
+  creditContainer: {
+    marginTop: 16,
+    alignItems: "center",
+  },
+  creditButton: {
+    backgroundColor: "#16a34a",
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+  },
+  creditButtonText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "bold",
   },
 });

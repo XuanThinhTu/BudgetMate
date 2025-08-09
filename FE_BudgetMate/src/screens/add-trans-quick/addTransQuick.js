@@ -9,20 +9,45 @@ import {
 } from "react-native";
 import logo from "../../../assets/logo.png";
 import { useNavigation } from "@react-navigation/native";
+import Toast from "react-native-toast-message";
+import { addNewTransactionByAI } from "../../services/apiServices";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function AddTransQuick() {
   const [input, setInput] = useState("");
   const navigation = useNavigation();
 
-  const handleQuickAdd = () => {
-    if (input.trim() !== "") {
-      console.log("Quick transaction added:", input);
-      setInput("");
+  const handleQuickAdd = async () => {
+    try {
+      if (input.trim() === "") {
+        Toast.show({
+          type: "error",
+          text1: "Please enter your description!",
+        });
+      } else {
+        const payload = { description: input };
+        const res = await addNewTransactionByAI(payload);
+
+        if (res) {
+          AsyncStorage.setItem("amount", res.amount);
+          AsyncStorage.setItem("category", res.category);
+          AsyncStorage.setItem("description", res.description);
+          navigation.navigate("AddTrans");
+        } else {
+          Toast.show({
+            type: "error",
+            text1: "Add transaction by AI failed!",
+          });
+        }
+      }
+    } catch (error) {
+      console.log(error);
     }
   };
 
   const goToAddPage = () => {
     navigation.navigate("AddTrans");
+    setInput("");
   };
 
   return (

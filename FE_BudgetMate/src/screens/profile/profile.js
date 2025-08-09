@@ -14,7 +14,10 @@ import {
   Entypo,
 } from "@expo/vector-icons";
 import Toast from "react-native-toast-message";
-import { getAuthenticatedUser } from "../../services/apiServices";
+import {
+  getAuthenticatedUser,
+  getPurchasedFeatures,
+} from "../../services/apiServices";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function ProfileScreen({ navigation }) {
@@ -60,6 +63,14 @@ export default function ProfileScreen({ navigation }) {
 
         <Text style={styles.name}>{user?.fullName}</Text>
         <Text style={styles.balance}>Credits: {user?.credits}</Text>
+
+        <TouchableOpacity
+          style={styles.creditHistoryButton}
+          onPress={() => navigation.navigate("CreditHistory")}
+        >
+          <FontAwesome5 name="history" size={18} color="#fff" />
+          <Text style={styles.creditHistoryText}>Credits Used History</Text>
+        </TouchableOpacity>
 
         <View style={styles.infoRow}>
           <Feather name="phone" size={20} color="#007BFF" />
@@ -177,5 +188,20 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 16,
     fontWeight: "600",
+  },
+  creditHistoryButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#28a745", // xanh chủ đạo
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+    marginBottom: 15,
+  },
+  creditHistoryText: {
+    color: "#fff",
+    fontSize: 15,
+    fontWeight: "500",
+    marginLeft: 8,
   },
 });
