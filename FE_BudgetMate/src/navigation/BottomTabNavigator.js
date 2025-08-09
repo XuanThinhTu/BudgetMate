@@ -3,9 +3,9 @@ import Ionicons from "react-native-vector-icons/Ionicons";
 import ProfileScreen from "../screens/profile/profile";
 import HomeScreenMain from "../screens/home/home";
 import TransactionScreen from "../screens/transaction/transaction";
-import AddTransactionScreen from "../screens/add-trans/addTrans";
 import FinancialToolsScreen from "../screens/fin-tool/financialTool";
 import AddTransQuick from "../screens/add-trans-quick/addTransQuick";
+import CreditHistoryScreen from "../screens/credit-history/creditHistory";
 
 const Tab = createBottomTabNavigator();
 
@@ -42,6 +42,7 @@ export default function BottomTabNavigator() {
       })}
     >
       <Tab.Screen name="Home" component={HomeScreenMain} />
+      {/* <Tab.Screen name="Home" component={CreditHistoryScreen} /> */}
       <Tab.Screen name="Transaction" component={TransactionScreen} />
       <Tab.Screen name="Add" component={AddTransQuick} />
       <Tab.Screen name="Tools" component={FinancialToolsScreen} />

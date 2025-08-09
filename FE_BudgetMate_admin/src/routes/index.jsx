@@ -11,7 +11,8 @@ import Success from "../pages/user/success/success";
 import Quizzes from "../pages/admin/quiz/quizzes";
 import ResetPass from "../pages/user/reset-pass/resetPass";
 import ResetSuccess from "../pages/user/reset-success/resetSuccess";
-import Features from "../pages/admin/membership/features/features";
+import PaymentReturn from "../pages/user/payment/paymentReturn";
+import Features from "../pages/admin/features/features";
 
 export default function AppNavigator() {
   return (
@@ -21,6 +22,7 @@ export default function AppNavigator() {
       <Route path="/success" element={<Success />} />
       <Route path="/reset/password" element={<ResetPass />} />
       <Route path="/reset-success" element={<ResetSuccess />} />
+      <Route path="/payment-return" element={<PaymentReturn />} />
 
       <Route path="/admin" element={<AdminDashboard />}>
         <Route index element={<Dashboard />} />

@@ -8,21 +8,49 @@ import {
   Dimensions,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { ProgressBar } from "react-native-paper";
-import { getUserWallets } from "../../../services/apiServices";
+import { deleteWallet, getUserWallets } from "../../../services/apiServices";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import Toast from "react-native-toast-message";
 
 const DebtScreen = ({ navigation }) => {
   const [wallets, setWallets] = useState([]);
+  const walletType = "DEBT";
 
   useEffect(() => {
-    fetchAllSavingWallets();
+    fetchAllDebtWallets();
   }, []);
 
-  const fetchAllSavingWallets = async () => {
+  const fetchAllDebtWallets = async () => {
     try {
       const res = await getUserWallets();
       const savings = res.filter((item) => item.type === "DEBT");
       setWallets(savings);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const handleNavigation = () => {
+    navigation.navigate("AddBudgetScreen");
+    AsyncStorage.setItem("walletType", walletType);
+  };
+
+  const handleDeleteWallet = async (id) => {
+    try {
+      const res = await deleteWallet(id);
+
+      if (res) {
+        Toast.show({
+          type: "success",
+          text1: "Delete wallet success!",
+        });
+        fetchAllDebtWallets();
+      } else {
+        Toast.show({
+          type: "error",
+          text1: "Delete wallet failed!",
+        });
+      }
     } catch (error) {
       console.log(error);
     }
@@ -88,8 +116,10 @@ const DebtScreen = ({ navigation }) => {
               <View style={styles.card} key={wallet.id}>
                 <View style={styles.cardHeader}>
                   <Text style={styles.title}>{wallet.name}</Text>
-                  <TouchableOpacity>
-                    <Ionicons name="create-outline" size={20} color="#999" />
+                  <TouchableOpacity
+                    onPress={() => handleDeleteWallet(wallet.id)}
+                  >
+                    <Ionicons name="trash-outline" size={20} color="#e74c3c" />
                   </TouchableOpacity>
                 </View>
 
@@ -117,7 +147,7 @@ const DebtScreen = ({ navigation }) => {
       </ScrollView>
 
       {/* Add Debt Button */}
-      <TouchableOpacity style={styles.addButton}>
+      <TouchableOpacity style={styles.addButton} onPress={handleNavigation}>
         <Ionicons name="add" size={18} color="white" />
         <Text style={styles.addButtonText}>Add Debt</Text>
       </TouchableOpacity>
@@ -130,12 +160,19 @@ export default DebtScreen;
 const { width } = Dimensions.get("window");
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#fff" },
+  container: {
+    flex: 1,
+    backgroundColor: "#f9f9f9",
+  },
   header: {
     flexDirection: "row",
     alignItems: "center",
     padding: 16,
-    gap: 8,
+    backgroundColor: "#fff",
+    elevation: 4,
+    shadowColor: "#000",
+    shadowOpacity: 0.05,
+    shadowRadius: 3,
   },
   backText: {
     fontSize: 18,
@@ -145,8 +182,10 @@ const styles = StyleSheet.create({
   tabs: {
     flexDirection: "row",
     justifyContent: "space-around",
-    backgroundColor: "#f5f5f5",
-    paddingVertical: 10,
+    backgroundColor: "#fff",
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderColor: "#eee",
   },
   tab: {
     paddingVertical: 6,
@@ -169,7 +208,7 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontWeight: "600",
   },
-  scrollContainer: {
+  body: {
     padding: 16,
     paddingBottom: 100,
   },
@@ -178,49 +217,53 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 16,
     shadowColor: "#000",
-    shadowOpacity: 0.05,
-    shadowRadius: 6,
-    elevation: 3,
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    elevation: 5,
     borderWidth: 1,
     borderColor: "#e0e0e0",
+    marginBottom: 20,
   },
   cardHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
+    marginBottom: 10,
   },
-  debtTitle: {
+  title: {
     fontSize: 16,
-    fontWeight: "bold",
+    fontWeight: "600",
+    color: "#333",
   },
-  amountText: {
+  savedText: {
     fontSize: 14,
-    marginTop: 12,
+    color: "#444",
+    marginBottom: 10,
   },
-  amountHighlight: {
-    color: "#00bcd4",
-    fontWeight: "bold",
+  progressBarContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    marginBottom: 10,
   },
-  progressWrapper: {
-    marginTop: 16,
+  progressBarBackground: {
+    flex: 1,
+    height: 10,
+    backgroundColor: "#eee",
+    borderRadius: 5,
   },
   progressBar: {
     height: 10,
+    backgroundColor: "#00C4CC",
     borderRadius: 5,
   },
-  progressText: {
-    marginTop: 2,
-    alignSelf: "center",
-    fontSize: 12,
-    color: "#00bcd4",
-    fontWeight: "bold",
-  },
-  dateText: {
-    marginTop: 16,
+  percentage: {
     fontSize: 13,
-    color: "#333",
+    fontWeight: "500",
+    color: "#00C4CC",
+    width: 40,
   },
-  remainingText: {
+  goalDate: {
     fontSize: 13,
     color: "#666",
   },
@@ -235,6 +278,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     borderRadius: 30,
     gap: 6,
+    elevation: 4,
   },
   addButtonText: {
     color: "#fff",

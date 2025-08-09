@@ -16,74 +16,49 @@ import {
 import {
   getTransactionsByWalletId,
   getUserWallets,
+  getAllCategories,
 } from "../../services/apiServices";
 
-const getCategoryIcon = (categoryName) => {
-  if (!categoryName)
-    return <MaterialIcons name="money" size={22} color="#333" />;
+const categoryIconMap = {
+  salary: <MaterialIcons name="attach-money" size={22} />,
+  income: <MaterialIcons name="attach-money" size={22} />,
+  "dining out": <MaterialIcons name="restaurant" size={22} />,
+  restaurant: <MaterialIcons name="restaurant" size={22} />,
+  shopping: <FontAwesome5 name="shopping-bag" size={20} />,
+  fashion: <FontAwesome5 name="shopping-bag" size={20} />,
+  cosmetics: <FontAwesome5 name="shopping-bag" size={20} />,
+  groceries: <MaterialIcons name="local-grocery-store" size={22} />,
+  education: <FontAwesome5 name="book" size={20} />,
+  health: <MaterialIcons name="health-and-safety" size={22} />,
+  insurance: <Entypo name="shield" size={22} />,
+  travel: <MaterialIcons name="travel-explore" size={22} />,
+  sports: <MaterialIcons name="sports-soccer" size={22} />,
+  appliances: <Feather name="tool" size={22} />,
+  bills: <MaterialIcons name="receipt" size={22} />,
+  utilities: <MaterialIcons name="receipt" size={22} />,
+  transportation: <FontAwesome5 name="car" size={20} />,
+  vehicle: <FontAwesome5 name="car" size={20} />,
+  "e-wallet": <FontAwesome5 name="wallet" size={20} />,
+  charity: <FontAwesome5 name="hands-helping" size={20} />,
+  investing: <Entypo name="line-graph" size={22} />,
+  loan: <Entypo name="line-graph" size={22} />,
+  gifts: <FontAwesome5 name="gift" size={20} />,
+  "credit card": <FontAwesome5 name="credit-card" size={20} />,
+  entertainment: <MaterialIcons name="sports-esports" size={22} />,
+  tax: <MaterialIcons name="receipt" size={22} />,
+  others: <MaterialIcons name="category" size={22} />,
+};
 
-  const lower = categoryName.toLowerCase();
-
-  if (lower.includes("lương") || lower.includes("doanh thu"))
-    return <MaterialIcons name="attach-money" size={24} color="#28a745" />;
-
-  if (lower.includes("ăn uống") || lower.includes("nhà hàng"))
-    return <MaterialIcons name="restaurant" size={22} color="#f39c12" />;
-
-  if (
-    lower.includes("mua sắm") ||
-    lower.includes("thời trang") ||
-    lower.includes("mỹ phẩm")
-  )
-    return <FontAwesome5 name="shopping-bag" size={20} color="#e91e63" />;
-
-  if (lower.includes("giải trí"))
-    return <MaterialIcons name="sports-esports" size={22} color="#9c27b0" />;
-
-  if (lower.includes("giáo dục") || lower.includes("sách"))
-    return <FontAwesome5 name="book" size={20} color="#3f51b5" />;
-
-  if (lower.includes("sức khoẻ"))
-    return <MaterialIcons name="health-and-safety" size={22} color="#4caf50" />;
-
-  if (lower.includes("bảo hiểm"))
-    return <Entypo name="shield" size={22} color="#009688" />;
-
-  if (lower.includes("du lịch"))
-    return <MaterialIcons name="travel-explore" size={22} color="#03a9f4" />;
-
-  if (lower.includes("thể thao"))
-    return <MaterialIcons name="sports-soccer" size={22} color="#ff5722" />;
-
-  if (lower.includes("gia dụng"))
-    return <Feather name="tool" size={22} color="#607d8b" />;
-
-  if (
-    lower.includes("hoá đơn") ||
-    lower.includes("phí") ||
-    lower.includes("thuế")
-  )
-    return <MaterialIcons name="receipt" size={22} color="#795548" />;
-
-  if (lower.includes("phương tiện") || lower.includes("đi lại"))
-    return <FontAwesome5 name="car" size={20} color="#607d8b" />;
-
-  if (lower.includes("ví điện tử"))
-    return <FontAwesome5 name="wallet" size={20} color="#673ab7" />;
-
-  if (lower.includes("từ thiện"))
-    return <FontAwesome5 name="hands-helping" size={20} color="#c2185b" />;
-
-  if (lower.includes("đầu tư") || lower.includes("vay"))
-    return <Entypo name="line-graph" size={22} color="#009688" />;
-
-  if (lower.includes("quà"))
-    return <FontAwesome5 name="gift" size={20} color="#ff9800" />;
-
-  if (lower.includes("thẻ tín dụng"))
-    return <FontAwesome5 name="credit-card" size={20} color="#f44336" />;
-
-  return <MaterialIcons name="money" size={22} color="#333" />;
+const getCategoryIcon = (categoryName, color = "#333") => {
+  if (!categoryName) {
+    return <MaterialIcons name="money" size={22} color={color} />;
+  }
+  const key = categoryName.toLowerCase().trim();
+  const iconElement = categoryIconMap[key];
+  if (iconElement) {
+    return React.cloneElement(iconElement, { color });
+  }
+  return <MaterialIcons name="money" size={22} color={color} />;
 };
 
 export default function TransactionScreen({ navigation }) {
@@ -92,6 +67,7 @@ export default function TransactionScreen({ navigation }) {
   const [openDropdown, setOpenDropdown] = useState(false);
   const [walletOptions, setWalletOptions] = useState([]);
   const [transactions, setTransactions] = useState([]);
+  const [categoriesMap, setCategoriesMap] = useState({});
 
   const totalIncome = transactions
     .filter((t) => t.type === "income")
@@ -103,6 +79,7 @@ export default function TransactionScreen({ navigation }) {
 
   useEffect(() => {
     fetchAllWallets();
+    fetchCategories();
   }, []);
 
   useEffect(() => {
@@ -130,6 +107,20 @@ export default function TransactionScreen({ navigation }) {
     }
   };
 
+  const fetchCategories = async () => {
+    try {
+      const categoryData = await getAllCategories();
+
+      const map = {};
+      categoryData.forEach((c) => {
+        map[c.name.toLowerCase()] = c.color;
+      });
+      setCategoriesMap(map);
+    } catch (err) {
+      console.log("Error fetching categories", err);
+    }
+  };
+
   const fetchAllTransactions = async (walletId) => {
     try {
       const res = await getTransactionsByWalletId(walletId);
@@ -144,6 +135,9 @@ export default function TransactionScreen({ navigation }) {
         });
 
         const type = item.amount < 0 ? "expense" : "income";
+        const categoryName = item.categoryName || "others";
+        const categoryId = item.categoryId;
+        const color = categoriesMap[categoryName.toLowerCase()] || "#333";
 
         return {
           id: item.id,
@@ -151,8 +145,9 @@ export default function TransactionScreen({ navigation }) {
           title: item.description,
           time,
           date,
-          categoryId: item.categoryId,
-          category: item.categoryName || "other",
+          categoryName: categoryName,
+          categoryId: categoryId,
+          color,
           type,
           walletId: item.walletId,
           walletName: item.walletName,
@@ -221,7 +216,9 @@ export default function TransactionScreen({ navigation }) {
 
         {transactions.length === 0 ? (
           <View style={styles.emptyState}>
-            <Text style={styles.emptyText}>Chưa có giao dịch nào</Text>
+            <Text style={styles.emptyText}>
+              There are no transactions yet.{" "}
+            </Text>
           </View>
         ) : (
           Object.entries(groupedByDate).map(([date, items]) => (
@@ -236,7 +233,7 @@ export default function TransactionScreen({ navigation }) {
                   }
                 >
                   <View style={styles.iconContainer}>
-                    {getCategoryIcon(item.category)}
+                    {getCategoryIcon(item.categoryName, item.color)}
                   </View>
                   <View style={styles.details}>
                     <Text style={styles.transactionTitle}>{item.title}</Text>

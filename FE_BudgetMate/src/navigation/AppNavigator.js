@@ -9,7 +9,6 @@ import BottomTabNavigator from "../navigation/BottomTabNavigator";
 import SavingScreen from "../screens/fin-tool/saving/saving";
 import DebtScreen from "../screens/fin-tool/debt/debt";
 import BudgetScreen from "../screens/fin-tool/budget/budget";
-import AddBudgetScreen from "../screens/fin-tool/budget/add-budget/addBudget";
 import Wallet from "../screens/wallet-setup/wallet";
 import AddTransactionScreen from "../screens/add-trans/addTrans";
 import TransDetails from "../screens/trans-details/transDetails";
@@ -17,6 +16,9 @@ import QuizScreen from "../screens/quiz/quiz";
 import Forgot from "../screens/authen/forgot/forgot";
 import NotificationScreen from "../screens/noti/notification";
 import MembershipScreen from "../screens/membership/membership";
+import AddBudgetScreen from "../screens/add-budget/addBudget";
+import CreditScreen from "../screens/credit-pay/credit";
+import CreditHistoryScreen from "../screens/credit-history/creditHistory";
 
 const Stack = createNativeStackNavigator();
 
@@ -36,6 +38,8 @@ const AppNavigator = () => {
         <Stack.Screen name="Quiz" component={QuizScreen} />
         <Stack.Screen name="Notification" component={NotificationScreen} />
         <Stack.Screen name="Membership" component={MembershipScreen} />
+        <Stack.Screen name="Credit" component={CreditScreen} />
+        <Stack.Screen name="CreditHistory" component={CreditHistoryScreen} />
         <Stack.Screen name="Home" component={BottomTabNavigator} />
         <Stack.Screen
           name="SavingsScreen"
