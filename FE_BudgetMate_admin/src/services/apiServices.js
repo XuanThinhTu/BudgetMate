@@ -215,3 +215,14 @@ export const getRevenueByRange = async (range, start, end) => {
     console.log(error);
   }
 };
+
+export const membershipBreakdown = async (start, end) => {
+  try {
+    const res = await axios.get(
+      `/admin/analytics/revenue/membership?startDate=${start}&endDate=${end}`
+    );
+    return res.data.data;
+  } catch (error) {
+    console.log(error);
+  }
+};
