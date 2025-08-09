@@ -197,3 +197,12 @@ export const deletePurchasableFeature = async (id) => {
     console.log(error);
   }
 };
+
+export const getRevenueByRange = async (range) => {
+  try {
+    const res = await axios.get(`/admin/analytics/revenue?period=${range}`);
+    return res.data.data;
+  } catch (error) {
+    console.log(error);
+  }
+};
