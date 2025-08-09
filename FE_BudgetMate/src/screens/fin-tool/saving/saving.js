@@ -7,10 +7,13 @@ import {
   ScrollView,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { getUserWallets } from "../../../services/apiServices";
+import { deleteWallet, getUserWallets } from "../../../services/apiServices";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import Toast from "react-native-toast-message";
 
 export default function SavingScreen({ navigation }) {
   const [wallets, setWallets] = useState([]);
+  const walletType = "SAVINGS";
 
   useEffect(() => {
     fetchAllSavingWallets();
@@ -21,6 +24,32 @@ export default function SavingScreen({ navigation }) {
       const res = await getUserWallets();
       const savings = res.filter((item) => item.type === "SAVINGS");
       setWallets(savings);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const handleNavigation = () => {
+    navigation.navigate("AddBudgetScreen");
+    AsyncStorage.setItem("walletType", walletType);
+  };
+
+  const handleDeleteWallet = async (id) => {
+    try {
+      const res = await deleteWallet(id);
+
+      if (res) {
+        Toast.show({
+          type: "success",
+          text1: "Delete wallet success!",
+        });
+        fetchAllSavingWallets();
+      } else {
+        Toast.show({
+          type: "error",
+          text1: "Delete wallet failed!",
+        });
+      }
     } catch (error) {
       console.log(error);
     }
@@ -88,8 +117,10 @@ export default function SavingScreen({ navigation }) {
               <View style={styles.card} key={wallet.id}>
                 <View style={styles.cardHeader}>
                   <Text style={styles.title}>{wallet.name}</Text>
-                  <TouchableOpacity>
-                    <Ionicons name="create-outline" size={20} color="#999" />
+                  <TouchableOpacity
+                    onPress={() => handleDeleteWallet(wallet.id)}
+                  >
+                    <Ionicons name="trash-outline" size={20} color="#e74c3c" />
                   </TouchableOpacity>
                 </View>
 
@@ -116,7 +147,7 @@ export default function SavingScreen({ navigation }) {
         )}
       </ScrollView>
 
-      <TouchableOpacity style={styles.addButton}>
+      <TouchableOpacity style={styles.addButton} onPress={handleNavigation}>
         <Ionicons name="add" size={18} color="white" />
         <Text style={styles.addButtonText}>Add Saving</Text>
       </TouchableOpacity>
