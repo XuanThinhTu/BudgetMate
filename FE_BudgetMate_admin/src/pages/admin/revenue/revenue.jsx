@@ -3,18 +3,20 @@ import {
   Typography,
   Select,
   Calendar,
+  DatePicker,
   Modal,
   Space,
   Card,
   Row,
   Col,
+  Spin,
 } from "antd";
+const { RangePicker } = DatePicker;
 import dayjs from "dayjs";
 import isSameOrAfter from "dayjs/plugin/isSameOrAfter";
 import isSameOrBefore from "dayjs/plugin/isSameOrBefore";
 import { getRevenueByRange } from "../../../services/apiServices";
 
-// Kích hoạt plugin
 dayjs.extend(isSameOrAfter);
 dayjs.extend(isSameOrBefore);
 
@@ -27,15 +29,17 @@ function Revenue() {
   const [loading, setLoading] = useState(false);
   const [selectedDay, setSelectedDay] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
 
   useEffect(() => {
     fetchRevenueAnalytics();
-  }, [range]);
+  }, [range, startDate, endDate]);
 
   const fetchRevenueAnalytics = async () => {
     try {
       setLoading(true);
-      const res = await getRevenueByRange(range);
+      const res = await getRevenueByRange(range, startDate, endDate);
       setAnalytics(res);
     } catch (error) {
       console.error(error);
@@ -107,11 +111,23 @@ function Revenue() {
         </Text>
       )}
 
-      <Calendar
-        loading={loading}
-        dateCellRender={dateCellRender}
-        fullscreen={true}
+      <RangePicker
+        format="YYYY-MM-DD"
+        style={{ marginBottom: 16 }}
+        onChange={(dates) => {
+          if (dates && dates.length === 2) {
+            setStartDate(dates[0].format("YYYY-MM-DD"));
+            setEndDate(dates[1].format("YYYY-MM-DD"));
+          } else {
+            setStartDate("");
+            setEndDate("");
+          }
+        }}
       />
+
+      <Spin spinning={loading} tip="Loading revenue data...">
+        <Calendar dateCellRender={dateCellRender} fullscreen={true} />
+      </Spin>
 
       <Modal
         title={null}
