@@ -19,6 +19,7 @@ import MembershipScreen from "../screens/membership/membership";
 import AddBudgetScreen from "../screens/add-budget/addBudget";
 import CreditScreen from "../screens/credit-pay/credit";
 import CreditHistoryScreen from "../screens/credit-history/creditHistory";
+import FinancialAnalysisScreen from "../screens/financial-analysis/financialAnalysis";
 
 const Stack = createNativeStackNavigator();
 
@@ -40,6 +41,10 @@ const AppNavigator = () => {
         <Stack.Screen name="Membership" component={MembershipScreen} />
         <Stack.Screen name="Credit" component={CreditScreen} />
         <Stack.Screen name="CreditHistory" component={CreditHistoryScreen} />
+        <Stack.Screen
+          name="FinancialAnalysis"
+          component={FinancialAnalysisScreen}
+        />
         <Stack.Screen name="Home" component={BottomTabNavigator} />
         <Stack.Screen
           name="SavingsScreen"
