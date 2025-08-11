@@ -298,3 +298,12 @@ export const getPurchasedFeatures = async () => {
     console.log(error);
   }
 };
+
+export const financialAnalysis = async (period) => {
+  try {
+    const res = await axios.get(`/analysis/finance?type=${period}`);
+    return res.data.data;
+  } catch (error) {
+    console.log(error);
+  }
+};

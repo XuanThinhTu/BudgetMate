@@ -19,7 +19,9 @@ import {
   getWalletBalance,
   getAuthenticatedUser,
   getUnreadNoti,
+  getCurrentSubcription,
 } from "../../services/apiServices";
+import Toast from "react-native-toast-message";
 
 const categoryIconMap = {
   salary: <MaterialIcons name="attach-money" size={22} />,
@@ -70,14 +72,15 @@ export default function HomeScreenMain({ navigation }) {
   const [summary, setSummary] = useState(null);
   const [recent, setRecent] = useState([]);
   const [quizStatus, setQuizStatus] = useState(null);
-  const [hasNotification, setHasNotification] = useState(true);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [curPack, setCurPack] = useState(null);
 
   useEffect(() => {
     fetchWalletId();
     fecthQuizStatus();
     getCurrentUser();
     fetchUnreadNoti();
+    fetchCurrentMemebership();
   }, []);
 
   useEffect(() => {
@@ -102,6 +105,15 @@ export default function HomeScreenMain({ navigation }) {
     try {
       const res = await getAuthenticatedUser();
       setUser(res);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const fetchCurrentMemebership = async () => {
+    try {
+      const res = await getCurrentSubcription();
+      setCurPack(res?.membershipPlan);
     } catch (error) {
       console.log(error);
     }
@@ -157,6 +169,13 @@ export default function HomeScreenMain({ navigation }) {
     } catch (error) {
       console.log(error);
     }
+  };
+
+  const hasAdvancedAnalytics = () => {
+    if (!curPack?.features) return false;
+    return curPack.features.some(
+      (f) => f.feature?.featureKey === "ADVANCED_ANALYTICS" && f.isEnabled
+    );
   };
 
   return (
@@ -257,6 +276,28 @@ export default function HomeScreenMain({ navigation }) {
           ))
         )}
       </View>
+
+      <TouchableOpacity
+        style={[
+          styles.financialAnalysisButton,
+          !hasAdvancedAnalytics() && { backgroundColor: "#94a3b8" },
+        ]}
+        onPress={() => {
+          if (hasAdvancedAnalytics()) {
+            navigation.navigate("FinancialAnalysis");
+          } else {
+            Toast.show({
+              type: "error",
+              text1: "Upgrade Required!",
+              text2:
+                "You need to subscribe to a membership plan with Advanced Analytics to use this feature.",
+            });
+          }
+        }}
+        disabled={!hasAdvancedAnalytics()}
+      >
+        <Text style={styles.financialAnalysisText}>📊 Financial Analysis</Text>
+      </TouchableOpacity>
 
       {/* Thành tựu */}
       <View style={styles.card}>
@@ -535,5 +576,19 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontWeight: "bold",
     fontSize: 16,
+  },
+  financialAnalysisButton: {
+    backgroundColor: "#0d9488",
+    paddingVertical: 12,
+    borderRadius: 8,
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: -10,
+    marginBottom: 15,
+  },
+  financialAnalysisText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "bold",
   },
 });
