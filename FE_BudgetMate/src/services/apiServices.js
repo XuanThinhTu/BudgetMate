@@ -252,8 +252,8 @@ export const paymentForNoneBasic = async (id) => {
   try {
     const res = await axios.post(`/subscriptions/payment/${id}`, {
       paymentMethod: "CREDIT_CARD",
-      returnUrl: "http://localhost:5173/payment-return",
-      cancelUrl: "http://localhost:5173/payment-return",
+      returnUrl: "https://budget-mate-beta.vercel.app/payment-return",
+      cancelUrl: "https://budget-mate-beta.vercel.app/payment-return",
     });
     return res.data.data;
   } catch (error) {
