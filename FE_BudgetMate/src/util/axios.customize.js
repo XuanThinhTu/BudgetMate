@@ -1,7 +1,7 @@
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-// const baseUrl = "https://budgetmate-app-b48b1f358087.herokuapp.com/api/v1";
-const baseUrl = "http://localhost:8080/api/v1";
+const baseUrl = "https://budgetmate-app-b48b1f358087.herokuapp.com/api/v1";
+//const baseUrl = "http://localhost:8080/api/v1";
 
 // Set config defaults when creating the instance
 const instance = axios.create({
