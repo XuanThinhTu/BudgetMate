@@ -6,7 +6,8 @@
     "start": "expo start",
     "android": "expo start --android",
     "ios": "expo start --ios",
-    "web": "expo start --web"
+    "web": "expo start --web",
+    "clean": "node clean.js"
   },
   "dependencies": {
     "@react-native-async-storage/async-storage": "2.1.2",
@@ -20,14 +21,9 @@
     "expo": "53.0.20",
     "expo-status-bar": "~2.2.3",
     "fe_budgetmate": "file:",
-<<<<<<< HEAD
-    "react": "19.1.0",
-    "react-native": "0.79.2",
-=======
     "react": "19.0.0",
     "react-dom": "19.0.0",
     "react-native": "0.79.5",
->>>>>>> c63372af4d8c7caebe2d7e33d9e0a1e9e59a56c9
     "react-native-dotenv": "^3.4.11",
     "react-native-dropdown-picker": "^5.4.6",
     "react-native-markdown-display": "^7.0.2",
