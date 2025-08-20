@@ -8,7 +8,7 @@ import {
   Image,
   StyleSheet,
   ScrollView,
-  Animated,
+  ActivityIndicator,
 } from "react-native";
 import Toast from "react-native-toast-message";
 
@@ -16,19 +16,52 @@ export default function RegisterScreen({ navigation }) {
   const [phoneNumber, setPhoneNumber] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [phoneError, setPhoneError] = useState("");
+  const [passwordError, setPasswordError] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const validatePhone = (phone) => {
+    const regex = /^0\d{9}$/; // bắt đầu bằng 0 và có 10 số
+    return regex.test(phone);
+  };
 
   const handleRegister = async () => {
-    if (!phoneNumber || !password || !confirmPassword) return;
+    // reset lỗi trước
+    setPhoneError("");
+    setPasswordError("");
+
+    let valid = true;
+
+    if (!validatePhone(phoneNumber)) {
+      setPhoneError("Invalid phone number, please enter again!");
+      valid = false;
+    }
+
     if (password !== confirmPassword) {
+      setPasswordError("Password doesn't match, please check again!");
+      valid = false;
+    }
+
+    if (!valid) return;
+
+    setLoading(true);
+    try {
+      await AsyncStorage.setItem("phone", phoneNumber);
+      await AsyncStorage.setItem("password", password);
+
+      Toast.show({
+        type: "success",
+        text1: "Register success!",
+      });
+      navigation.navigate("Setup");
+    } catch (err) {
+      console.log(err);
       Toast.show({
         type: "error",
         text1: "Register failed!",
-        text2: "Your password doesn't match!",
       });
-    } else {
-      await AsyncStorage.setItem("phone", phoneNumber);
-      await AsyncStorage.setItem("password", password);
-      navigation.navigate("Setup");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -51,8 +84,12 @@ export default function RegisterScreen({ navigation }) {
         keyboardType="phone-pad"
         style={styles.input}
         value={phoneNumber}
-        onChangeText={setPhoneNumber}
+        onChangeText={(text) => {
+          setPhoneNumber(text);
+          if (phoneError) setPhoneError(""); // clear khi user sửa
+        }}
       />
+      {phoneError ? <Text style={styles.errorText}>{phoneError}</Text> : null}
 
       <TextInput
         placeholder="Password"
@@ -69,22 +106,31 @@ export default function RegisterScreen({ navigation }) {
         secureTextEntry
         style={styles.input}
         value={confirmPassword}
-        onChangeText={setConfirmPassword}
+        onChangeText={(text) => {
+          setConfirmPassword(text);
+          if (passwordError) setPasswordError(""); // clear khi user sửa
+        }}
       />
+      {passwordError ? (
+        <Text style={styles.errorText}>{passwordError}</Text>
+      ) : null}
 
-      <TouchableOpacity style={styles.registerButton} onPress={handleRegister}>
-        <Text style={styles.registerButtonText}>Register</Text>
+      <TouchableOpacity
+        style={[styles.registerButton, loading && { opacity: 0.7 }]}
+        onPress={handleRegister}
+        disabled={loading}
+      >
+        {loading ? (
+          <ActivityIndicator color="#fff" />
+        ) : (
+          <Text style={styles.registerButtonText}>Register</Text>
+        )}
       </TouchableOpacity>
 
       <View style={styles.loginContainer}>
         <Text style={styles.loginText}>Already have an account? </Text>
-        <TouchableOpacity>
-          <Text
-            style={styles.loginLink}
-            onPress={() => navigation.navigate("Login")}
-          >
-            Login
-          </Text>
+        <TouchableOpacity onPress={() => navigation.navigate("Login")}>
+          <Text style={styles.loginLink}>Login</Text>
         </TouchableOpacity>
       </View>
     </ScrollView>
@@ -140,6 +186,12 @@ const styles = StyleSheet.create({
     shadowRadius: 5,
     elevation: 3,
   },
+  errorText: {
+    color: "red",
+    fontSize: 13,
+    marginBottom: 5,
+    alignSelf: "flex-start",
+  },
   registerButton: {
     width: "100%",
     backgroundColor: "#007BFF",
@@ -169,60 +221,6 @@ const styles = StyleSheet.create({
   loginLink: {
     fontSize: 14,
     color: "#007BFF",
-    fontWeight: "600",
-  },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: "rgba(0,0,0,0.5)",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  modalContainer: {
-    width: "80%",
-    backgroundColor: "#fff",
-    borderRadius: 20,
-    padding: 25,
-    alignItems: "center",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 5,
-    elevation: 5,
-  },
-  modalTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "#333",
-    marginBottom: 10,
-  },
-  modalMessage: {
-    fontSize: 14,
-    color: "#666",
-    textAlign: "center",
-    marginBottom: 10,
-  },
-  modalPhone: {
-    fontSize: 16,
-    fontWeight: "bold",
-    color: "#007BFF",
-    marginBottom: 20,
-  },
-  modalButtons: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    width: "100%",
-  },
-  modalButton: {
-    flex: 1,
-    padding: 15,
-    borderRadius: 10,
-    alignItems: "center",
-    marginHorizontal: 5,
-    marginVertical: 10,
-    justifyContent: "center",
-  },
-  modalButtonText: {
-    fontSize: 16,
     fontWeight: "600",
   },
 });

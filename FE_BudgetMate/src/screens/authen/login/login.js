@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   Image,
   StyleSheet,
+  ActivityIndicator,
 } from "react-native";
 import Toast from "react-native-toast-message";
 import {
@@ -18,8 +19,10 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 export default function LoginScreen({ navigation }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false); // ✅ thêm state loading
 
   const handleLogin = async () => {
+    setLoading(true); // bật loading khi ấn login
     try {
       const result = await loginFunction(email, password);
       if (result) {
@@ -44,6 +47,8 @@ export default function LoginScreen({ navigation }) {
       }
     } catch (error) {
       console.log(error);
+    } finally {
+      setLoading(false); // tắt loading sau khi xử lý xong
     }
   };
 
@@ -80,8 +85,16 @@ export default function LoginScreen({ navigation }) {
         <Text style={styles.forgotText}>Forgot your password?</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity style={styles.loginButton} onPress={handleLogin}>
-        <Text style={styles.loginButtonText}>Login</Text>
+      <TouchableOpacity
+        style={[styles.loginButton, loading && { opacity: 0.7 }]}
+        onPress={handleLogin}
+        disabled={loading} // disable khi đang loading
+      >
+        {loading ? (
+          <ActivityIndicator color="#fff" /> // hiện spinner
+        ) : (
+          <Text style={styles.loginButtonText}>Login</Text>
+        )}
       </TouchableOpacity>
 
       <View style={styles.signupContainer}>

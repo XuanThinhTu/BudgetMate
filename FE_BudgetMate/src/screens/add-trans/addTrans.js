@@ -4,11 +4,10 @@ import {
   Text,
   TextInput,
   StyleSheet,
-  Button,
-  Alert,
-  ScrollView,
   TouchableOpacity,
+  ScrollView,
   Platform,
+  ActivityIndicator,
 } from "react-native";
 import DropDownPicker from "react-native-dropdown-picker";
 import Toast from "react-native-toast-message";
@@ -31,6 +30,7 @@ export default function AddTransactionScreen({ navigation }) {
   const [categoryItems, setCategoryItems] = useState([]);
 
   const [walletValue, setWalletValue] = useState(null);
+  const [loading, setLoading] = useState(false); // trạng thái loading cho button
 
   useEffect(() => {
     fetchAllCategories();
@@ -98,6 +98,7 @@ export default function AddTransactionScreen({ navigation }) {
       return;
     }
 
+    setLoading(true); // bật loading khi submit
     try {
       const payload = {
         amount: parseFloat(amount),
@@ -125,6 +126,8 @@ export default function AddTransactionScreen({ navigation }) {
       }
     } catch (error) {
       console.log(error);
+    } finally {
+      setLoading(false); // tắt loading khi xong
     }
   };
 
@@ -184,13 +187,17 @@ export default function AddTransactionScreen({ navigation }) {
         multiline={true}
       />
 
-      <View style={styles.buttonContainer}>
-        <Button
-          title="Add Transaction"
-          color="#1d4ed8"
-          onPress={handleSubmit}
-        />
-      </View>
+      <TouchableOpacity
+        style={[styles.button, loading && { opacity: 0.7 }]}
+        onPress={handleSubmit}
+        disabled={loading}
+      >
+        {loading ? (
+          <ActivityIndicator color="#fff" />
+        ) : (
+          <Text style={styles.buttonText}>Add Transaction</Text>
+        )}
+      </TouchableOpacity>
     </ScrollView>
   );
 }
@@ -229,7 +236,16 @@ const styles = StyleSheet.create({
   dropdownContainer: {
     borderColor: "#1d4ed8",
   },
-  buttonContainer: {
+  button: {
+    backgroundColor: "#1d4ed8",
+    padding: 14,
+    borderRadius: 8,
     marginTop: 30,
+    alignItems: "center",
+  },
+  buttonText: {
+    color: "#fff",
+    fontWeight: "bold",
+    fontSize: 16,
   },
 });
