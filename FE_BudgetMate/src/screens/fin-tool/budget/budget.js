@@ -5,12 +5,14 @@ import {
   StyleSheet,
   TouchableOpacity,
   ScrollView,
+  ActivityIndicator,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { getUserWallets } from "../../../services/apiServices";
 
 export default function BudgetScreen({ navigation }) {
   const [wallets, setWallets] = useState([]);
+  const [loading, setLoading] = useState(true); // ✅ thêm state loading
 
   useEffect(() => {
     fetchAllSavingWallets();
@@ -18,16 +20,20 @@ export default function BudgetScreen({ navigation }) {
 
   const fetchAllSavingWallets = async () => {
     try {
+      setLoading(true); // bắt đầu loading
       const res = await getUserWallets();
       const savings = res.filter((item) => item.type === "DEFAULT");
       setWallets(savings);
     } catch (error) {
       console.log(error);
+    } finally {
+      setLoading(false); // kết thúc loading
     }
   };
 
   return (
     <View style={styles.container}>
+      {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity
           onPress={() => navigation.navigate("Home", { screen: "Tools" })}
@@ -65,9 +71,15 @@ export default function BudgetScreen({ navigation }) {
         </TouchableOpacity>
       </View>
 
-      {/* Saving Card */}
+      {/* Body */}
       <ScrollView contentContainerStyle={styles.body}>
-        {wallets.length === 0 ? (
+        {loading ? ( // ✅ hiển thị spinner khi đang tải
+          <ActivityIndicator
+            size="large"
+            color="#00C4CC"
+            style={{ marginTop: 40 }}
+          />
+        ) : wallets.length === 0 ? (
           <Text style={styles.emptyText}>
             You have not created any saving wallet yet.
           </Text>

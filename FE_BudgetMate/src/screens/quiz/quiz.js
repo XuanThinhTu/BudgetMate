@@ -8,6 +8,7 @@ import {
   Alert,
 } from "react-native";
 import { getUserDailyQuizzes, submitAnswer } from "../../services/apiServices";
+import Toast from "react-native-toast-message";
 
 export default function QuizScreen({ navigation }) {
   const [quizzes, setQuizzes] = useState([]);
@@ -63,9 +64,15 @@ export default function QuizScreen({ navigation }) {
       setIsCorrect(null);
       setShowResult(false);
     } else {
-      Alert.alert("Quiz Complete", "You've answered all the questions!", [
-        { text: "OK", onPress: () => navigation.navigate("Home") },
-      ]);
+      Toast.show({
+        type: "success",
+        text1: "Quiz Complete",
+        text2: "You've answered all the questions!",
+      });
+
+      setTimeout(() => {
+        navigation.navigate("Home", { screen: "Home" });
+      }, 2000);
     }
   };
 

@@ -6,6 +6,7 @@ import {
   StyleSheet,
   ScrollView,
   Dimensions,
+  ActivityIndicator,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { deleteWallet, getUserWallets } from "../../../services/apiServices";
@@ -14,6 +15,7 @@ import Toast from "react-native-toast-message";
 
 const DebtScreen = ({ navigation }) => {
   const [wallets, setWallets] = useState([]);
+  const [loading, setLoading] = useState(true); // Thêm state loading
   const walletType = "DEBT";
 
   useEffect(() => {
@@ -22,11 +24,14 @@ const DebtScreen = ({ navigation }) => {
 
   const fetchAllDebtWallets = async () => {
     try {
+      setLoading(true); // Bắt đầu loading
       const res = await getUserWallets();
       const savings = res.filter((item) => item.type === "DEBT");
       setWallets(savings);
     } catch (error) {
       console.log(error);
+    } finally {
+      setLoading(false); // Kết thúc loading
     }
   };
 
@@ -96,9 +101,15 @@ const DebtScreen = ({ navigation }) => {
 
       {/* Debt Card */}
       <ScrollView contentContainerStyle={styles.body}>
-        {wallets.length === 0 ? (
+        {loading ? (
+          <ActivityIndicator
+            size="large"
+            color="#00C4CC"
+            style={{ marginTop: 40 }}
+          />
+        ) : wallets.length === 0 ? (
           <Text style={styles.emptyText}>
-            You have not created any saving wallet yet.
+            You have not created any debt wallet yet.
           </Text>
         ) : (
           wallets.map((wallet) => {
@@ -178,6 +189,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     color: "black",
     fontWeight: "bold",
+    marginLeft: 10,
   },
   tabs: {
     flexDirection: "row",

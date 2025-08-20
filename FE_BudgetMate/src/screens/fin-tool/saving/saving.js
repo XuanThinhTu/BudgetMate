@@ -5,6 +5,7 @@ import {
   StyleSheet,
   TouchableOpacity,
   ScrollView,
+  ActivityIndicator,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { deleteWallet, getUserWallets } from "../../../services/apiServices";
@@ -13,6 +14,7 @@ import Toast from "react-native-toast-message";
 
 export default function SavingScreen({ navigation }) {
   const [wallets, setWallets] = useState([]);
+  const [loading, setLoading] = useState(false);
   const walletType = "SAVINGS";
 
   useEffect(() => {
@@ -21,11 +23,18 @@ export default function SavingScreen({ navigation }) {
 
   const fetchAllSavingWallets = async () => {
     try {
+      setLoading(true);
       const res = await getUserWallets();
       const savings = res.filter((item) => item.type === "SAVINGS");
       setWallets(savings);
     } catch (error) {
       console.log(error);
+      Toast.show({
+        type: "error",
+        text1: "Failed to load saving wallets!",
+      });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -51,6 +60,10 @@ export default function SavingScreen({ navigation }) {
         });
       }
     } catch (error) {
+      Toast.show({
+        type: "error",
+        text1: "Something went wrong!",
+      });
       console.log(error);
     }
   };
@@ -60,7 +73,7 @@ export default function SavingScreen({ navigation }) {
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity
-          onPress={() => navigation.navigate("Home", { screen: "Tools" })} // navigation.goBack()
+          onPress={() => navigation.navigate("Home", { screen: "Tools" })}
         >
           <Ionicons name="arrow-back" size={24} color="black" />
         </TouchableOpacity>
@@ -95,9 +108,15 @@ export default function SavingScreen({ navigation }) {
         </TouchableOpacity>
       </View>
 
-      {/* Saving Card */}
+      {/* Body */}
       <ScrollView contentContainerStyle={styles.body}>
-        {wallets.length === 0 ? (
+        {loading ? (
+          <ActivityIndicator
+            size="large"
+            color="#00C4CC"
+            style={{ marginTop: 40 }}
+          />
+        ) : wallets.length === 0 ? (
           <Text style={styles.emptyText}>
             You have not created any saving wallet yet.
           </Text>
@@ -209,6 +228,7 @@ const styles = StyleSheet.create({
     elevation: 3,
     borderWidth: 1,
     borderColor: "#e0e0e0",
+    marginBottom: 16,
   },
   cardHeader: {
     flexDirection: "row",

@@ -6,6 +6,7 @@ import {
   StyleSheet,
   TouchableOpacity,
   Linking,
+  ActivityIndicator, // thêm
 } from "react-native";
 import {
   getAllMemberships,
@@ -19,6 +20,8 @@ import { useNavigation } from "@react-navigation/native";
 export default function MembershipScreen() {
   const [packages, setPackages] = useState([]);
   const [currentPackageId, setCurrentPackageId] = useState(0);
+  const [loading, setLoading] = useState(false);
+  const [subscribingId, setSubscribingId] = useState(null);
   const navigation = useNavigation();
 
   useEffect(() => {
@@ -37,15 +40,20 @@ export default function MembershipScreen() {
 
   const fetchMemberships = async () => {
     try {
+      setLoading(true);
       const res = await getAllMemberships();
       setPackages(res);
     } catch (error) {
       console.log(error);
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleSubscribe = async (membership) => {
     try {
+      setSubscribingId(membership.id);
+
       if (membership.price === 0) {
         const res = await paymentForBasic(membership.id);
 
@@ -68,6 +76,8 @@ export default function MembershipScreen() {
       }
     } catch (error) {
       console.log(error);
+    } finally {
+      setSubscribingId(null);
     }
   };
 
@@ -75,44 +85,63 @@ export default function MembershipScreen() {
     <ScrollView style={styles.container}>
       <Text style={styles.title}>Membership Plans</Text>
 
-      {packages.map((pkg) => (
-        <View key={pkg.id} style={styles.card}>
-          <Text style={styles.planName}>{pkg.name}</Text>
-          <Text style={styles.price}>
-            {pkg.price === 0
-              ? "Free"
-              : `${pkg.price.toLocaleString("vi-VN")}₫ / ${pkg.type}`}
-          </Text>
-          <Text style={styles.description}>{pkg.description}</Text>
-
-          <Text style={styles.featureTitle}>Included Features:</Text>
-          {pkg.features?.length > 0 ? (
-            pkg.features.map((f) => (
-              <View key={f.id} style={styles.featureItem}>
-                <Text style={styles.bullet}>•</Text>
-                <Text style={styles.featureText}>{f.description}</Text>
-              </View>
-            ))
-          ) : (
-            <Text style={{ fontStyle: "italic", color: "#888" }}>
-              No features listed.
+      {loading ? ( // nếu đang loading
+        <ActivityIndicator
+          size="large"
+          color="#1d4ed8"
+          style={{ marginTop: 20 }}
+        />
+      ) : packages.length === 0 ? (
+        <Text
+          style={{ fontStyle: "italic", color: "#888", textAlign: "center" }}
+        >
+          No membership plans available
+        </Text>
+      ) : (
+        packages.map((pkg) => (
+          <View key={pkg.id} style={styles.card}>
+            <Text style={styles.planName}>{pkg.name}</Text>
+            <Text style={styles.price}>
+              {pkg.price === 0
+                ? "Free"
+                : `${pkg.price.toLocaleString("vi-VN")}₫ / ${pkg.type}`}
             </Text>
-          )}
+            <Text style={styles.description}>{pkg.description}</Text>
 
-          <TouchableOpacity
-            style={[
-              styles.button,
-              pkg.id === currentPackageId && styles.disabledButton,
-            ]}
-            onPress={() => handleSubscribe(pkg)}
-            disabled={pkg.id === currentPackageId}
-          >
-            <Text style={styles.buttonText}>
-              {pkg.id === currentPackageId ? "Current Plan" : "Subscribe"}
-            </Text>
-          </TouchableOpacity>
-        </View>
-      ))}
+            <Text style={styles.featureTitle}>Included Features:</Text>
+            {pkg.features?.length > 0 ? (
+              pkg.features.map((f) => (
+                <View key={f.id} style={styles.featureItem}>
+                  <Text style={styles.bullet}>•</Text>
+                  <Text style={styles.featureText}>{f.description}</Text>
+                </View>
+              ))
+            ) : (
+              <Text style={{ fontStyle: "italic", color: "#888" }}>
+                No features listed.
+              </Text>
+            )}
+
+            <TouchableOpacity
+              style={[
+                styles.button,
+                (pkg.id === currentPackageId || subscribingId === pkg.id) &&
+                  styles.disabledButton,
+              ]}
+              onPress={() => handleSubscribe(pkg)}
+              disabled={pkg.id === currentPackageId || subscribingId === pkg.id}
+            >
+              {subscribingId === pkg.id ? (
+                <ActivityIndicator color="#fff" />
+              ) : (
+                <Text style={styles.buttonText}>
+                  {pkg.id === currentPackageId ? "Current Plan" : "Subscribe"}
+                </Text>
+              )}
+            </TouchableOpacity>
+          </View>
+        ))
+      )}
 
       <View style={styles.creditContainer}>
         <TouchableOpacity

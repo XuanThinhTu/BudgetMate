@@ -20,6 +20,7 @@ export default function CreditScreen({ navigation }) {
   const [currentPackage, setCurrentPackage] = useState("");
   const [credits, setCredits] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [purchasingId, setPurchasingId] = useState(null);
 
   useEffect(() => {
     fetchAllFeats();
@@ -58,6 +59,7 @@ export default function CreditScreen({ navigation }) {
 
   const handlePurchaseFeature = async (id) => {
     try {
+      setPurchasingId(id);
       const res = await purchaseFeature(id);
 
       if (res) {
@@ -74,6 +76,8 @@ export default function CreditScreen({ navigation }) {
       }
     } catch (error) {
       console.log(error);
+    } finally {
+      setPurchasingId(null);
     }
   };
 
@@ -116,10 +120,18 @@ export default function CreditScreen({ navigation }) {
           </View>
 
           <TouchableOpacity
-            style={styles.buyButton}
+            style={[
+              styles.buyButton,
+              purchasingId === feat.id && { backgroundColor: "#6c757d" }, // màu xám khi loading
+            ]}
             onPress={() => handlePurchaseFeature(feat.id)}
+            disabled={purchasingId === feat.id} // khóa nút khi đang loading
           >
-            <Text style={styles.buyButtonText}>Buy Feature</Text>
+            {purchasingId === feat.id ? (
+              <ActivityIndicator color="#fff" />
+            ) : (
+              <Text style={styles.buyButtonText}>Buy Feature</Text>
+            )}
           </TouchableOpacity>
         </View>
       ))}
