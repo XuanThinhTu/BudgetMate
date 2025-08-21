@@ -6,9 +6,9 @@ import {
   TouchableOpacity,
   StyleSheet,
   Image,
-  Alert,
   KeyboardAvoidingView,
   Platform,
+  ActivityIndicator,
 } from "react-native";
 import logo from "../../../../assets/logo.png";
 import { forgotPassword } from "../../../services/apiServices";
@@ -16,9 +16,23 @@ import Toast from "react-native-toast-message";
 
 export default function Forgot({ navigation }) {
   const [email, setEmail] = useState("");
+  const [emailError, setEmailError] = useState("");
+  const [loading, setLoading] = useState(false); // state loading
+
+  const validateEmail = (value) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(value);
+  };
 
   const handleSubmit = async () => {
+    if (!validateEmail(email)) {
+      setEmailError("Invalid email, please enter again!");
+      return;
+    }
+    setEmailError("");
+
     try {
+      setLoading(true); // bật loading
       const res = await forgotPassword(email);
 
       if (res) {
@@ -36,6 +50,8 @@ export default function Forgot({ navigation }) {
       }
     } catch (error) {
       console.log(error);
+    } finally {
+      setLoading(false); // tắt loading
     }
   };
 
@@ -54,17 +70,29 @@ export default function Forgot({ navigation }) {
         </Text>
 
         <TextInput
-          style={styles.input}
+          style={[styles.input, emailError ? { borderColor: "red" } : null]}
           placeholder="Email address"
           placeholderTextColor="#888"
           value={email}
-          onChangeText={setEmail}
+          onChangeText={(text) => {
+            setEmail(text);
+            if (emailError) setEmailError("");
+          }}
           keyboardType="email-address"
           autoCapitalize="none"
         />
+        {emailError ? <Text style={styles.errorText}>{emailError}</Text> : null}
 
-        <TouchableOpacity style={styles.button} onPress={handleSubmit}>
-          <Text style={styles.buttonText}>Submit</Text>
+        <TouchableOpacity
+          style={[styles.button, loading && { opacity: 0.7 }]}
+          onPress={handleSubmit}
+          disabled={loading} // chặn bấm khi đang loading
+        >
+          {loading ? (
+            <ActivityIndicator size="small" color="#fff" />
+          ) : (
+            <Text style={styles.buttonText}>Submit</Text>
+          )}
         </TouchableOpacity>
       </View>
     </KeyboardAvoidingView>
@@ -105,9 +133,16 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 12,
     fontSize: 16,
-    marginBottom: 20,
+    marginBottom: 8,
     backgroundColor: "#fff",
     color: "#111827",
+  },
+  errorText: {
+    color: "red",
+    alignSelf: "flex-start",
+    marginBottom: 12,
+    marginLeft: 4,
+    fontSize: 13,
   },
   button: {
     backgroundColor: "#2563eb",
@@ -116,6 +151,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     width: "100%",
     alignItems: "center",
+    marginTop: 8,
   },
   buttonText: {
     color: "#fff",
