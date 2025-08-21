@@ -15,8 +15,7 @@ import Toast from "react-native-toast-message";
 export default function Wallet({ navigation }) {
   const [walletType, setWalletType] = useState("DEFAULT");
   const [userWallet, setUserWallet] = useState([]);
-  const [loading, setLoading] = useState(false); // ✅ loading state
-
+  const [loading, setLoading] = useState(false);
   const [open, setOpen] = useState(false);
   const [items, setItems] = useState([
     { label: "Saving", value: "SAVINGS" },

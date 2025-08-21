@@ -123,13 +123,13 @@ export default function SavingScreen({ navigation }) {
         ) : (
           wallets.map((wallet) => {
             const savedAmount = wallet.balance;
-            const targetAmount = wallet.targetAmount;
+            const targetAmount = wallet.interestRate;
             const percentage = Math.min(
               100,
               Math.round((savedAmount / targetAmount) * 100)
             );
 
-            const date = new Date(wallet.deadline);
+            const date = new Date(wallet.startDate);
             const formattedDate = date.toDateString();
 
             return (
@@ -158,7 +158,7 @@ export default function SavingScreen({ navigation }) {
                 </View>
 
                 <Text style={styles.goalDate}>
-                  🎯 Goal date: {formattedDate}
+                  🎯 Start date: {formattedDate}
                 </Text>
               </View>
             );
