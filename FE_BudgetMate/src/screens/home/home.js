@@ -5,6 +5,7 @@ import {
   ScrollView,
   StyleSheet,
   TouchableOpacity,
+  ActivityIndicator,
 } from "react-native";
 import {
   MaterialIcons,
@@ -71,6 +72,7 @@ export default function HomeScreenMain({ navigation }) {
   const [wallets, setWallets] = useState([]);
   const [summary, setSummary] = useState(null);
   const [recent, setRecent] = useState([]);
+  const [loadingRecent, setLoadingRecent] = useState(false);
   const [quizStatus, setQuizStatus] = useState(null);
   const [unreadCount, setUnreadCount] = useState(0);
   const [curPack, setCurPack] = useState(null);
@@ -139,6 +141,7 @@ export default function HomeScreenMain({ navigation }) {
 
   const fetchTransactionByWalletId = async (id) => {
     try {
+      setLoadingRecent(true);
       const res = await getTransactionsByWalletId(id);
       const sorted = res
         .sort(
@@ -159,6 +162,8 @@ export default function HomeScreenMain({ navigation }) {
       setRecent(mapped);
     } catch (error) {
       console.log(error);
+    } finally {
+      setLoadingRecent(false);
     }
   };
 
@@ -243,7 +248,9 @@ export default function HomeScreenMain({ navigation }) {
           </TouchableOpacity>
         </View>
 
-        {recent.length === 0 ? (
+        {loadingRecent ? (
+          <ActivityIndicator size="small" color="#1d4ed8" />
+        ) : recent.length === 0 ? (
           <Text style={{ fontStyle: "italic", color: "#888" }}>
             No recent transactions
           </Text>

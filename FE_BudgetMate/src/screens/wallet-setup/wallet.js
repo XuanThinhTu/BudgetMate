@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   StyleSheet,
   Platform,
+  ActivityIndicator,
 } from "react-native";
 import DropDownPicker from "react-native-dropdown-picker";
 import { addNewWallet, getUserWallets } from "../../services/apiServices";
@@ -14,7 +15,7 @@ import Toast from "react-native-toast-message";
 export default function Wallet({ navigation }) {
   const [walletType, setWalletType] = useState("DEFAULT");
   const [userWallet, setUserWallet] = useState([]);
-
+  const [loading, setLoading] = useState(false);
   const [open, setOpen] = useState(false);
   const [items, setItems] = useState([
     { label: "Saving", value: "SAVINGS" },
@@ -42,6 +43,7 @@ export default function Wallet({ navigation }) {
 
   const handleCreateWallet = async () => {
     try {
+      setLoading(true); // ✅ start loading
       const payload = {
         type: userWallet.length > 0 ? walletType : "DEFAULT",
         name: name,
@@ -49,7 +51,7 @@ export default function Wallet({ navigation }) {
         interestRate: isSaving ? parseFloat(interestRate) : null,
         deadline: isSaving ? deadline : null,
       };
-      console.log(payload);
+
       const res = await addNewWallet(payload);
 
       if (res) {
@@ -66,6 +68,8 @@ export default function Wallet({ navigation }) {
       }
     } catch (error) {
       console.log(error);
+    } finally {
+      setLoading(false); // ✅ stop loading
     }
   };
 
@@ -89,14 +93,11 @@ export default function Wallet({ navigation }) {
           />
         </>
       ) : (
-        <>
-          <View style={styles.noticeBox}>
-            <Text style={styles.noticeText}>
-              Please fill in the information to add a new wallet to your
-              account.
-            </Text>
-          </View>
-        </>
+        <View style={styles.noticeBox}>
+          <Text style={styles.noticeText}>
+            Please fill in the information to add a new wallet to your account.
+          </Text>
+        </View>
       )}
 
       <Text style={styles.label}>Wallet Name</Text>
@@ -135,8 +136,16 @@ export default function Wallet({ navigation }) {
         editable={isSaving}
       />
 
-      <TouchableOpacity style={styles.button} onPress={handleCreateWallet}>
-        <Text style={styles.buttonText}>Create Wallet</Text>
+      <TouchableOpacity
+        style={[styles.button, loading && { opacity: 0.7 }]}
+        onPress={handleCreateWallet}
+        disabled={loading} // ✅ disable khi đang loading
+      >
+        {loading ? (
+          <ActivityIndicator color="#fff" />
+        ) : (
+          <Text style={styles.buttonText}>Create Wallet</Text>
+        )}
       </TouchableOpacity>
     </View>
   );
@@ -179,6 +188,7 @@ const styles = StyleSheet.create({
     padding: 14,
     borderRadius: 8,
     marginTop: 20,
+    alignItems: "center",
   },
   buttonText: {
     color: "#fff",

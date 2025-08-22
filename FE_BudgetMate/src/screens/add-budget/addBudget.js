@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   StyleSheet,
   ScrollView,
+  ActivityIndicator, // ⬅️ Import spinner
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -15,9 +16,13 @@ import Toast from "react-native-toast-message";
 export default function AddBudgetScreen({ navigation }) {
   const [title, setTitle] = useState("");
   const [amount, setAmount] = useState("");
-  const [deadline, setDeadline] = useState("");
+  const [date, setDate] = useState("");
   const [walletType, setWalletType] = useState("");
   const [category, setCategory] = useState(null);
+  const [termMonth, setTermMonth] = useState(0);
+  const [loading, setLoading] = useState(false);
+  const [dateError, setDateError] = useState("");
+  const [amountError, setAmountError] = useState("");
 
   useEffect(() => {
     handleLoadWalletType();
@@ -32,19 +37,76 @@ export default function AddBudgetScreen({ navigation }) {
     }
   };
 
+  const validateDob = (date) => {
+    const regex = /^\d{4}-\d{2}-\d{2}$/;
+    if (!regex.test(date)) return false;
+
+    const [year, month, day] = date.split("-").map(Number);
+    if (year < 1950) return false;
+    if (month < 1 || month > 12) return false;
+
+    const daysInMonth = new Date(year, month, 0).getDate();
+    if (day < 1 || day > daysInMonth) return false;
+
+    return true;
+  };
+
+  const handleDateChange = (text) => {
+    setDate(text);
+    if (text === "" || validateDob(text)) {
+      setDateError(""); // hợp lệ thì clear lỗi
+    } else {
+      setDateError("Invalid date, please enter again!");
+    }
+  };
+
+  const handleAmountChange = (text) => {
+    setAmount(text);
+
+    if (text === "") {
+      setAmountError("");
+      return;
+    }
+
+    if (isNaN(text)) {
+      setAmountError("Invalid type, please enter again!");
+    } else {
+      setAmountError("");
+    }
+  };
+
   const handleGoBack = () => {
     navigation.goBack();
     AsyncStorage.removeItem("walletType");
   };
 
   const handleSubmit = async () => {
+    if (!validateDob(date)) {
+      setDateError("Invalid date, please enter again!");
+      return;
+    }
+    if (isNaN(amount) || amount === "") {
+      setAmountError("Invalid type, please enter again!");
+      return;
+    }
+
     try {
-      const payload = {
-        type: walletType,
-        name: title,
-        targetAmount: amount,
-        deadline: deadline,
-      };
+      setLoading(true);
+      const payload =
+        walletType === "DEBT"
+          ? {
+              type: walletType,
+              name: title,
+              targetAmount: parseFloat(amount),
+              deadline: date,
+            }
+          : {
+              type: walletType,
+              name: title,
+              interestRate: parseFloat(amount),
+              startDate: date,
+              termMonths: parseInt(termMonth),
+            };
       const res = await addNewWallet(payload);
       if (res) {
         Toast.show({
@@ -61,6 +123,8 @@ export default function AddBudgetScreen({ navigation }) {
       }
     } catch (error) {
       console.log(error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -93,23 +157,42 @@ export default function AddBudgetScreen({ navigation }) {
       />
 
       {/* Amount */}
-      <Text style={styles.label}>Target Amount</Text>
+      <Text style={styles.label}>
+        {walletType === "DEBT" ? "Target Amount" : "Interest Rate"}
+      </Text>
       <TextInput
         placeholder="Enter amount"
         value={amount}
-        onChangeText={setAmount}
+        onChangeText={handleAmountChange}
         keyboardType="numeric"
         style={styles.input}
       />
+      {amountError ? <Text style={styles.errorText}>{amountError}</Text> : null}
 
       {/* Deadline */}
-      <Text style={styles.label}>Deadline</Text>
+      <Text style={styles.label}>
+        {walletType === "DEBT" ? "Deadline" : "Start Date"}
+      </Text>
       <TextInput
         placeholder="yyyy-mm-dd"
-        value={deadline}
-        onChangeText={setDeadline}
+        value={date}
+        onChangeText={handleDateChange}
         style={styles.input}
       />
+      {dateError ? <Text style={styles.errorText}>{dateError}</Text> : null}
+
+      {walletType === "SAVINGS" && (
+        <>
+          <Text style={styles.label}>Term Month</Text>
+          <TextInput
+            placeholder="Enter term in months"
+            value={termMonth}
+            onChangeText={setTermMonth}
+            keyboardType="numeric"
+            style={styles.input}
+          />
+        </>
+      )}
 
       {/* Category Section */}
       <Text style={styles.label}>Budget/Goal Category</Text>
@@ -128,8 +211,16 @@ export default function AddBudgetScreen({ navigation }) {
       </TouchableOpacity>
 
       {/* Save Button */}
-      <TouchableOpacity style={styles.saveButton} onPress={handleSubmit}>
-        <Text style={styles.saveButtonText}>Save</Text>
+      <TouchableOpacity
+        style={[styles.saveButton, loading && { opacity: 0.7 }]}
+        onPress={handleSubmit}
+        disabled={loading} // disable khi loading
+      >
+        {loading ? (
+          <ActivityIndicator color="#fff" /> // ⬅️ hiển thị spinner
+        ) : (
+          <Text style={styles.saveButtonText}>Save</Text>
+        )}
       </TouchableOpacity>
     </ScrollView>
   );
@@ -208,5 +299,11 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 16,
     fontWeight: "600",
+  },
+  errorText: {
+    color: "red",
+    fontSize: 12,
+    marginTop: -10,
+    marginBottom: 10,
   },
 });

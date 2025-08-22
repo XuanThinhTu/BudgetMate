@@ -45,7 +45,16 @@ const AppNavigator = () => {
           name="FinancialAnalysis"
           component={FinancialAnalysisScreen}
         />
-        <Stack.Screen name="Home" component={BottomTabNavigator} />
+        <Stack.Screen
+          name="Home"
+          component={BottomTabNavigator}
+          options={{
+            headerShown: true,
+            headerBackVisible: false,
+            headerLeft: () => null,
+            title: "Home",
+          }}
+        />
         <Stack.Screen
           name="SavingsScreen"
           component={SavingScreen}
