@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   StyleSheet,
   Image,
+  ActivityIndicator,
 } from "react-native";
 import logo from "../../../assets/logo.png";
 import { useNavigation } from "@react-navigation/native";
@@ -15,6 +16,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function AddTransQuick() {
   const [input, setInput] = useState("");
+  const [loading, setLoading] = useState(false); // 🔥 state loading
   const navigation = useNavigation();
 
   const handleQuickAdd = async () => {
@@ -24,24 +26,29 @@ export default function AddTransQuick() {
           type: "error",
           text1: "Please enter your description!",
         });
-      } else {
-        const payload = { description: input };
-        const res = await addNewTransactionByAI(payload);
+        return;
+      }
 
-        if (res) {
-          AsyncStorage.setItem("amount", res.amount);
-          AsyncStorage.setItem("category", res.category);
-          AsyncStorage.setItem("description", res.description);
-          navigation.navigate("AddTrans");
-        } else {
-          Toast.show({
-            type: "error",
-            text1: "Add transaction by AI failed!",
-          });
-        }
+      setLoading(true); // bật loading
+      const payload = { description: input };
+      const res = await addNewTransactionByAI(payload);
+
+      if (res) {
+        await AsyncStorage.setItem("amount", res.amount.toString());
+        await AsyncStorage.setItem("category", res.category);
+        await AsyncStorage.setItem("description", res.description);
+        navigation.navigate("AddTrans");
+        setInput("");
+      } else {
+        Toast.show({
+          type: "error",
+          text1: "Add transaction by AI failed!",
+        });
       }
     } catch (error) {
       console.log(error);
+    } finally {
+      setLoading(false); // tắt loading
     }
   };
 
@@ -63,8 +70,16 @@ export default function AddTransQuick() {
         onChangeText={setInput}
       />
 
-      <TouchableOpacity style={styles.addButton} onPress={handleQuickAdd}>
-        <Text style={styles.addButtonText}>Add</Text>
+      <TouchableOpacity
+        style={[styles.addButton, loading && { opacity: 0.7 }]}
+        onPress={handleQuickAdd}
+        disabled={loading}
+      >
+        {loading ? (
+          <ActivityIndicator size="small" color="#fff" />
+        ) : (
+          <Text style={styles.addButtonText}>Add</Text>
+        )}
       </TouchableOpacity>
 
       <TouchableOpacity onPress={goToAddPage}>

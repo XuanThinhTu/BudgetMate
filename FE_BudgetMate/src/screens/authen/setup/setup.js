@@ -9,6 +9,7 @@ import {
   ScrollView,
   StyleSheet,
   Image,
+  ActivityIndicator,
 } from "react-native";
 import DropDownPicker from "react-native-dropdown-picker";
 import { registerFunction } from "../../../services/apiServices";
@@ -20,6 +21,10 @@ export default function SetupScreen({ navigation }) {
   const [city, setCity] = useState("");
   const [street, setStreet] = useState("");
 
+  const [emailError, setEmailError] = useState("");
+  const [dobError, setDobError] = useState("");
+  const [loading, setLoading] = useState(false);
+
   const [open, setOpen] = useState(false);
   const [country, setCountry] = useState("United States");
   const [countries, setCountries] = useState([
@@ -30,29 +35,76 @@ export default function SetupScreen({ navigation }) {
     { label: "Vietnam", value: "Vietnam" },
   ]);
 
+  const validateEmail = (email) => {
+    const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return regex.test(email);
+  };
+
+  const validateDob = (date) => {
+    const regex = /^\d{4}-\d{2}-\d{2}$/;
+    if (!regex.test(date)) return false;
+
+    const [year, month, day] = date.split("-").map(Number);
+    if (year < 1950) return false;
+    if (month < 1 || month > 12) return false;
+
+    const daysInMonth = new Date(year, month, 0).getDate();
+    if (day < 1 || day > daysInMonth) return false;
+
+    return true;
+  };
+
   const handleSubmit = async () => {
-    const address = `${street} ${city} ${country}`;
-    const phone = await AsyncStorage.getItem("phone");
-    const pass = await AsyncStorage.getItem("password");
-    if (!fullName || !email || !dob || !address) return;
-    const result = await registerFunction(
-      email,
-      pass,
-      fullName,
-      phone,
-      address
-    );
-    if (result) {
-      Toast.show({
-        type: "success",
-        text1: "Verification successful!",
-      });
-      navigation.navigate("Login");
-    } else {
+    setEmailError("");
+    setDobError("");
+
+    let valid = true;
+
+    if (!validateEmail(email)) {
+      setEmailError("Invalid email, please enter again!");
+      valid = false;
+    }
+    if (!validateDob(dob)) {
+      setDobError("Invalid date of birth, please enter again!");
+      valid = false;
+    }
+
+    if (!valid) return;
+
+    setLoading(true);
+    try {
+      const address = `${street} ${city} ${country}`;
+      const phone = await AsyncStorage.getItem("phone");
+      const pass = await AsyncStorage.getItem("password");
+
+      const result = await registerFunction(
+        email,
+        pass,
+        fullName,
+        phone,
+        address
+      );
+
+      if (result) {
+        Toast.show({
+          type: "success",
+          text1: "Verification successful!",
+        });
+        navigation.navigate("Login");
+      } else {
+        Toast.show({
+          type: "error",
+          text1: "Verification failed!",
+        });
+      }
+    } catch (err) {
+      console.log(err);
       Toast.show({
         type: "error",
-        text1: "Verification failed!",
+        text1: "Something went wrong!",
       });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -86,6 +138,7 @@ export default function SetupScreen({ navigation }) {
         value={email}
         onChangeText={setEmail}
       />
+      {emailError ? <Text style={styles.errorText}>{emailError}</Text> : null}
 
       <TextInput
         placeholder="Date of Birth (YYYY-MM-DD)"
@@ -95,6 +148,7 @@ export default function SetupScreen({ navigation }) {
         onChangeText={setDob}
         keyboardType="numeric"
       />
+      {dobError ? <Text style={styles.errorText}>{dobError}</Text> : null}
 
       <View style={{ zIndex: 1000, width: "100%", marginBottom: 15 }}>
         <DropDownPicker
@@ -126,8 +180,16 @@ export default function SetupScreen({ navigation }) {
         />
       </View>
 
-      <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
-        <Text style={styles.submitButtonText}>Continue</Text>
+      <TouchableOpacity
+        style={[styles.submitButton, loading && { opacity: 0.7 }]}
+        onPress={handleSubmit}
+        disabled={loading}
+      >
+        {loading ? (
+          <ActivityIndicator color="#fff" />
+        ) : (
+          <Text style={styles.submitButtonText}>Continue</Text>
+        )}
       </TouchableOpacity>
     </ScrollView>
   );
@@ -172,7 +234,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     padding: 14,
     borderRadius: 10,
-    marginBottom: 15,
+    marginBottom: 8,
     borderWidth: 1,
     borderColor: "#e5e7eb",
     shadowColor: "#000",
@@ -180,6 +242,12 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowRadius: 5,
     elevation: 2,
+  },
+  errorText: {
+    color: "red",
+    fontSize: 13,
+    marginBottom: 8,
+    alignSelf: "flex-start",
   },
   halfInput: {
     width: "48%",

@@ -5,6 +5,7 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
+  ActivityIndicator,
 } from "react-native";
 import DropDownPicker from "react-native-dropdown-picker";
 import {
@@ -68,6 +69,7 @@ export default function TransactionScreen({ navigation }) {
   const [walletOptions, setWalletOptions] = useState([]);
   const [transactions, setTransactions] = useState([]);
   const [categoriesMap, setCategoriesMap] = useState({});
+  const [loading, setLoading] = useState(false);
 
   const totalIncome = transactions
     .filter((t) => t.type === "income")
@@ -123,7 +125,9 @@ export default function TransactionScreen({ navigation }) {
 
   const fetchAllTransactions = async (walletId) => {
     try {
+      setLoading(true); // start loading
       const res = await getTransactionsByWalletId(walletId);
+
       const mapped = res.map((item) => {
         const dateObj = new Date(item.transactionTime);
 
@@ -160,6 +164,8 @@ export default function TransactionScreen({ navigation }) {
       setTransactions(mapped);
     } catch (error) {
       console.log(error);
+    } finally {
+      setLoading(false); // stop loading
     }
   };
 
@@ -214,11 +220,13 @@ export default function TransactionScreen({ navigation }) {
           </View>
         </View>
 
-        {transactions.length === 0 ? (
+        {loading ? (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color="#007AFF" />
+          </View>
+        ) : transactions.length === 0 ? (
           <View style={styles.emptyState}>
-            <Text style={styles.emptyText}>
-              There are no transactions yet.{" "}
-            </Text>
+            <Text style={styles.emptyText}>There are no transactions yet.</Text>
           </View>
         ) : (
           Object.entries(groupedByDate).map(([date, items]) => (
